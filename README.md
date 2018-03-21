@@ -24,10 +24,6 @@ The files in the repo are organized as follows:
 
 ## Getting Started
 
-Install [git-annex].
-
-[git-annex]: http://git-annex.branchable.com/install/
-
 Clone this repo:
 
 ```bash
@@ -35,10 +31,9 @@ cd ~/work/
 git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 
-# Enable the remote Partners server
-git annex enableremote partners
+# Download the data from Partners
+rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
 ```
-`/data/srlab/public/srcollab/AMP/amp_phase1_ra`
 
 ## Analysis
 
