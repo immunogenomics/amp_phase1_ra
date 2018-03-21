@@ -1,5 +1,7 @@
 # let's not send data to GitHub for now
-data/
+data/*.rds
+data/*.rda
+data/*.RData
 
 # History files
 .Rhistory
