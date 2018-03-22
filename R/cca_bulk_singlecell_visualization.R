@@ -46,23 +46,23 @@ source("../2017_02_28_Phase1_cellseq_RA_single_cell_data/meta_colors.R")
 # Load CCA results for each cell type -----------------------------
 # Fibroblasts results
 # 7,016 genes; 45 samples; 1,910 cells
-res <- readRDS("./Fibro_cca_7016_genes.rds")
+res <- readRDS("data/Fibro_cca_7016_genes.rds")
 
 # Load meta data accordingly
-bulk_m <- readRDS("./Fibro_cca_bulk_m.rds")
-cell_m <- readRDS("./Fibro_cca_cell_m.rds")
+bulk_m <- readRDS("data/Fibro_cca_bulk_m.rds")
+cell_m <- readRDS("data/Fibro_cca_cell_m.rds")
 
 # T cell results
 # 7,003 genes; 47 samples; 1,990 cells
-res <- readRDS("./Tcell_cca_7003_genes.rds")
+res <- readRDS("data/Tcell_cca_7003_genes.rds")
 
 # B cell results
 # 7,023 genes; 29 samples; 1,428 cells
-res <- readRDS("./Bcell_cca_7023_genes.rds")
+res <- readRDS("data/Bcell_cca_7023_genes.rds")
 
 # Monocyte results
 # 7,016 genes; 47 samples; 940 cells
-res <- readRDS("./Monocyte_cca_7016_genes.rds")
+res <- readRDS("data/Monocyte_cca_7016_genes.rds")
 
 
 # ----------------------------------------------------------------
