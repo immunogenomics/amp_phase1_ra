@@ -363,6 +363,10 @@ gene_res_best <- do.call(rbind, lapply(1:length(table(cc_sc$cluster)), function(
       auc = auc[cluster == i],
       # Sort by mean diff between cluster and next biggest cluster
       mean_diff = mean[cluster == i] - sort(mean[cluster != i], decreasing = TRUE)[1]
+      # mean_diff_1 (log2FC): mean_diff = mean[cluster == i] - sort(mean[cluster != i], decreasing = TRUE)[1]
+      # mean_diff_2 (log2FC)
+      # Effect size: Z-score
+      # t.test p-value
     )
   x <- x[order(x$auc, decreasing = TRUE),]
   x <- head(x, 200)
