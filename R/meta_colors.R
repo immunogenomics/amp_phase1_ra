@@ -188,24 +188,32 @@ meta_colors <- list(
       "S036" = "#1B9E77",
       "S037" = "#D95F02" 
   ),
+  "Case.Control" = c(
+    "OA"  = "#6A3D9A",
+    "non-inflamed RA"  = "#FFD8B2",
+    "inflamed RA" = "#FF7F00" 
+  ),
   "disease" = c(
-    "OA arthro" = "#6A3D9A"
-    "RA arthro" = "#FFD8B2",
-    "RA biopsy" = "#FF7F00"
+    "OA arthro"  = "#6A3D9A",
+    "RA arthro"  = "#FFD8B2",
+    "RA biopsy" = "#FF7F00" 
   ),
   "Subject.type" = c(
-    "OA" = "#6A3D9A",
+    "OA"  = "#6A3D9A",
     "RA" = "#FF7F00" 
   ),
   "disease_assay" = c(
-    "OA_arthro" = "#6A3D9A"
+    "OA_arthro" = "#6A3D9A",
     "RA_arthro" = "#FFD8B2",
-    "RA_biopsy" = "#FF7F00"
+    "RA_biopsy" = "#FF7F00"  
   ),
   "tissue_type" = c(
-    "OA-arthro" = "#6A3D9A"
-    "RA-arthro" = "#FFD8B2",
-    "RA-biopsy" = "#FF7F00"
+    "OA-arthro"  = "#6A3D9A",
+    "RA-arthro"  = "#FFD8B2",
+    "RA-biopsy"  = "#FF7F00" 
+    # "OA-arthro"  = "#FFD8B2",
+    # "RA-arthro"  = "#D9D9D9",
+    # "RA-biopsy"  = "#737373"
   ),
   "fbsubset" = c(
     "CD34p"      = "#33A02C",
@@ -371,25 +379,44 @@ meta_colors <- list(
    "10" = "#DD3497" #FF7F00
  ),
  fine_cluster = c(
-    "F-1" = "#6BAED6",
-    "F-2" = "#08306B", 
-    "F-3" = "#DEEBF7",
-    "F-4" = "grey",
-    "T-1" = "#FEB24C",
-    "T-2" = "#8C510A",
-    "T-3" = "brown",
-    "T-4" = "#FFFF33",
-    "T-5" = "#C7EAE5",
-    "T-6" = "#003C30",
-    "T-7" = "#35978F", 
-    "B-1" = "#FCBBA1",
-    "B-2" = "#CB181D", #FB6A4A #A50F15
-    "B-3" = "#67000D",
-    "B-4" = "#FB9A99",
-    "M-1" = "#AE017E",
-    "M-2" = "#F768A1",
-    "M-3" = "#FDE0EF", #FCC5C0
-    "M-4" = "#49006A"
+    # "F-1" = "#6BAED6",
+    # "F-2" = "#08306B", 
+    # "F-3" = "#DEEBF7",
+    # "F-4" = "grey",
+    # "T-1" = "#FEB24C",
+    # "T-2" = "#8C510A",
+    # "T-3" = "brown",
+    # "T-4" = "#FFFF33",
+    # "T-5" = "#C7EAE5",
+    # "T-6" = "#003C30",
+    # "T-7" = "#35978F", 
+    # "B-1" = "#FCBBA1",
+    # "B-2" = "#CB181D", #FB6A4A #A50F15
+    # "B-3" = "#67000D",
+    # "B-4" = "#FB9A99",
+    # "M-1" = "#AE017E",
+    # "M-2" = "#F768A1",
+    # "M-3" = "#FDE0EF", #FCC5C0
+    # "M-4" = "#49006A"
+    "CF1" = "#6BAED6",
+    "CF2" = "#08306B", 
+    "CF3" = "#DEEBF7",
+    "CF4" = "grey",
+    "CT1" = "#FEB24C",
+    "CT2" = "#8C510A",
+    "CT3" = "brown",
+    "CT4" = "#FFFF33",
+    "CT5" = "#C7EAE5",
+    "CT6" = "#003C30",
+    "CT7" = "#35978F", 
+    "CB1" = "#FCBBA1",
+    "CB2" = "#CB181D", #FB6A4A #A50F15
+    "CB3" = "#67000D",
+    "CB4" = "#FB9A99",
+    "CM1" = "#AE017E",
+    "CM2" = "#F768A1",
+    "CM3" = "#FDE0EF", #FCC5C0
+    "CM4" = "#49006A"
  ),
  clus_new = c(
    "CF1" = "#6BAED6",
