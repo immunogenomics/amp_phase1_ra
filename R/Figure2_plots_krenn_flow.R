@@ -333,83 +333,48 @@ fibro_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median
 mono_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Monocytes))
 other_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Other))
 
-dat_percent = data.frame(
+dat_median = data.frame(
   bcell = bcell_median$median,
-  cd4 = cd4_median,
-  cd8 = cd8_median,
-  endo = endo_median,
-  fibro = fibro_median,
-  mono = mono_median,
-  other = other_median
+  cd4 = cd4_median$median,
+  cd8 = cd8_median$median,
+  endo = endo_median$median,
+  fibro = fibro_median$median,
+  mono = mono_median$median,
+  other = other_median$median
 )
-dat_percent <- t(dat_percent)
+dat_median <- t(dat_median)
+
+dat_percent = data.frame(
+  disease = c(rep("OA", 7), rep("non-inflamed RA", 7), rep("inflamed RA", 7)),
+  flow_gate = rep(c("B cell", "CD4 T cell", "CD8 T cell", "Endothelial cell", "Fibroblast", "Monocyte", "Other"), 3),
+  flow_value = c(dat_median[,1], dat_median[,2], dat_median[,3])  
+)
 
 
+dat_percent$disease <- factor(dat_percent$disease,
+                               levels = c('OA','non-inflamed RA', "inflamed RA"),ordered = TRUE)
 
+ggplot(
+  data=dat_percent,
+  # aes(x=reorder(disease, flow_pro), y= flow_pro, fill = flow_cell)
+  aes(x=disease, y= flow_value, fill = flow_gate)
+  ) +
+  geom_bar(stat="identity", position = "fill") +
+  scale_fill_manual("", values = meta_colors$flow) +
+  labs(
+    x = NULL,
+    y = "Abundance of flow\n (% of live cells)"
+    # title = ""
+  ) +
+  theme_bw(base_size = 20) +
+  theme(
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 20, color = "black"),
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    axis.text.y = element_text(size = 20),
+    legend.key.size = unit(1, 'lines') # adjust the legend size
+    )
+ggsave(file = paste("barplot_flow_gates_inflamed_noninflamed", ".pdf", sep = ""), width = 5.5, height = 5, dpi = 300)
+dev.off()
 
-
-# # ------------------
-# active <- dat_all[which(dat_all$Case.Control == "active RA"), c(22:30)]
-# active <- colMeans(active[sapply(active, is.numeric)])
-# active <- active[-c(7,9)]
-# 
-# inactive <- dat_all[which(dat_all$Case.Control == "inactive RA"), c(22:30)]
-# inactive <- colMeans(inactive[sapply(inactive, is.numeric)])
-# inactive <- inactive[-c(7,9)]
-# 
-# oa <- dat_all[which(dat_all$Case.Control == "OA"), c(22:30)]
-# oa <- colMeans(oa[sapply(oa, is.numeric)])
-# oa <- oa[-c(7,9)]
-# 
-# ave_all = data.frame(
-#   disease = c(rep("active RA", length(active)), 
-#               rep("inactive RA", length(inactive)), 
-#               rep("OA", length(oa))
-#               ),
-#   flow_cell = c(names(active), names(inactive), names(oa)),
-#   flow_pro = c(active, inactive, oa)
-# )
-# dim(ave_all)
-# 
-# 
-# 
-# # ---------------------------------------------------------------------------
-# # ave_all is the all 59 samples based on RA biopsy, RA arthro, and OA arthro
-# # saveRDS(ave_all, "barplot_ave_all_flow.rds")
-# # ave_all <- readRDS("barplot_ave_all_flow.rds")
-# 
-# ave_all$flow_cell <- as.character(ave_all$flow_cell)
-# ave_all$flow_cell[which(ave_all$flow_cell == "CD8.T.cells.")] <- "CD8 T cell"
-# ave_all$flow_cell[which(ave_all$flow_cell == "CD4.T.cells")] <- "CD4 T cell"
-# ave_all$flow_cell[which(ave_all$flow_cell == "Monocytes")] <- "Monocyte"
-# ave_all$flow_cell[which(ave_all$flow_cell == "B.cells")] <- "B cell"
-# ave_all$flow_cell[which(ave_all$flow_cell == "Endo")] <- "Endothelial cell"
-# ave_all$flow_cell[which(ave_all$flow_cell == "Fibroblasts")] <- "Fibroblast"
-# 
-# ave_all$disease <- as.character(ave_all$disease)
-# ave_all$disease[which(ave_all$disease == "OA")] <- "OA arthro"
-# ave_all$disease[which(ave_all$disease == "RA arthroplasty")] <- "RA arthro"
-# 
-# source("../2017_02_28_Phase1_cellseq_RA_single_cell_data/meta_colors.R")
-# ggplot(
-#   data=ave_all,
-#   # aes(x=reorder(disease, flow_pro), y= flow_pro, fill = flow_cell)
-#   aes(x=disease, y= flow_pro, fill = flow_cell)
-#   ) +
-#   geom_bar(stat="identity", position = "fill") +
-#   scale_fill_manual("", values = meta_colors$flow) + 
-#   labs(
-#     x = NULL,
-#     y = "Abundance of flow\n (% of live cells)"
-#     # title = ""
-#   ) +
-#   theme_bw(base_size = 30) +
-#   theme(axis.text = element_text(size = 30, color = "black"),
-#         axis.text.x = element_text(angle = 30, hjust = 1),
-#         axis.text.y = element_text(size = 30),
-#         legend.key.size = unit(2.5, 'lines'))
-# ggsave(file = paste("barplot_flow_v1", ".pdf", sep = ""), width = 8, height = 9, dpi = 600)
-# dev.off()
-# 
-# 
-# 
