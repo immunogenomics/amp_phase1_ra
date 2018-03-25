@@ -312,7 +312,7 @@ ggplot(
     axis.text.y = element_text(size = 20)) +
   theme(legend.text=element_text(size=20))
 ggsave(file = paste("krenn_lym_inflamed_noninflamed", ".pdf", sep = ""), 
-       width = 6, height = 6)
+       width = 4.5, height = 4)
 dev.off()
 
 
