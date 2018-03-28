@@ -89,7 +89,8 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
   bulk_m,
-  model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
+  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
+  model.matrix(~ Case.Control)
 )
 
 # Fit the model to each gene
@@ -124,36 +125,35 @@ dat_plot$logFC <- (-1) * dat_plot$logFC
 dat_plot$CI.L <- (-1) * dat_plot$CI.L
 dat_plot$CI.R <- (-1) * dat_plot$CI.R
 
-# Plot logFC
-ggplot(dat_plot, 
-       aes(reorder(logFC, gene), gene, group = gene)
-       ) +
-  geom_errorbar(aes(xmin=CI.L, xmax=CI.R), width=0.1) +
-  geom_segment(
-    aes(
-      x = reorder(gene, logFC),
-      xend = reorder(gene, logFC),
-      y = 0,
-      yend = logFC
-    )
-  ) +
-  # geom_point(size = 2) +
-  coord_flip() +
-  labs(
-    x = NULL,
-    y = NULL
-    # title = "Bulk RNA-seq differential analysis"
-  ) +
-  theme_bw(base_size = 20) 
-  # theme(
-  #   # legend.position = "none",
-  #   # axis.text = element_blank(), 
-  #   # axis.ticks = element_blank(), 
-  #   panel.grid = element_blank()
-  # ) +
-  # geom_vline(xintercept = 0) 
 
-dev.print("fibro_DE_genes_log2FC.pdf", width = 4, height = 8, dev = pdf)
+# Plot genes based on logFC
+ggplot() +
+  geom_errorbar(data=dat_plot, 
+                mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
+                width=0.3, size=0.6, color = "black"
+                ) +
+  geom_point(data=dat_plot, 
+            aes(x=reorder(gene, logFC),y= logFC),
+            size = 1
+  ) +
+  # scale_color_manual(values = c('grey70', 'black')) +
+  geom_hline(yintercept = 0, size = 0.3) +
+  scale_x_discrete(position = "top") +
+  #scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  coord_flip() +
+  labs(x = NULL, 
+       y = "Log2 FC",
+       subtitle = "Inflamed RA versus OA"
+       # title = "abs(Log2 FC) > 0.5 and 5% FDR"
+       ) +
+  theme_bw(base_size = 26) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 26, color = "black"),
+    axis.text.y = element_text(size = 26, face="italic"))
+dev.print("fibro_DE_genes_log2FC.pdf", width = 6, height = 10, dev = pdf)
 dev.off()
+
 
 
