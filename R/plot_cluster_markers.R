@@ -10,6 +10,7 @@ library(ggplot2)
 library(ggrepel)
 library(gdata) 
 library(pbapply)
+library(dplyr)
 
 source("meta_colors.R")
 
@@ -20,7 +21,7 @@ test[which(test != "All cells")] <- "One cell type cells"
 dat_table$test <- test
 
 # "All cells" are used for comparing one cluster versus all (18) the other clusters
-# dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
+dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
 dim(dat_table)
 
 # Remove th mitochondrial genes
@@ -124,18 +125,38 @@ dev.off()
 
 
 
-# Export # genes that pass four criteria:
-# 1) pct_nonzero > 60%, 2) AUC > 0.7, 3) -log10(wilcox p) > 20, and 4) log2FC > 1.
-dat_table$wilcox_pvalue <- -log10(dat_table$wilcox_pvalue)
-dat_table$wilcox_pvalue[which(dat_table$wilcox_pvalue == "Inf")] <- 300
-good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_pvalue > 20 & dat_table$log2FC > 1),]
+# Report # genes that pass four criteria:
+# 1) pct_nonzero > 60%, 2) AUC > 0.7, 3) -log10(wilcox p) > 20, and 4) log2FC > 1
+
+dat_table$wilcox_log <- -log10(dat_table$wilcox_pvalue)
+dat_table$wilcox_log[which(dat_table$wilcox_log == "Inf")] <- 300
+
+good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_log > 20 & dat_table$log2FC > 1),]
+good_markers$cluster = factor(good_markers$cluster, 
+                              levels=c("C-F1", "C-F2", "C-F3", "C-F4",
+                                       "C-M1", "C-M2", "C-M3", "C-M4",
+                                       "C-B1", "C-B2", "C-B3", "C-B4",
+                                       "C-T1", "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7"
+                              ))
 table(good_markers$cluster)
 
 
+# Export top 10 - 20 cluster marker genes 
+x <- dat_table %>%
+  group_by(cluster) %>%
+  top_n(20, wt = auc)
+dim(x)
+x$cluster = factor(x$cluster, 
+                  levels=c("C-F1", "C-F2", "C-F3", "C-F4",
+                           "C-M1", "C-M2", "C-M3", "C-M4",
+                           "C-B1", "C-B2", "C-B3", "C-B4",
+                           "C-T1", "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7"
+                              ))
+x <- x[order(x$auc, decreasing = TRUE),]
+x <- x[order(x$cluster, decreasing = FALSE),]
 
+x_save <- x[, c("gene", "cluster", "cell_type", "auc", "wilcox_pvalue", "ttest_pvalue", "pct_nonzero", "pct_nonzero_other", "log2FC")]
 
-
-
-
+write.table(x_save, file = "top20_singlecell_cluster_markers.txt", quote = F, sep = "\t")
 
 
