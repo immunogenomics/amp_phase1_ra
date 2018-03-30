@@ -76,8 +76,8 @@ get_markers <- function(log2cpm, cell_clusters) {
           "pct_nonzero"   = pct_nonzero,
           "pct_nonzero_other" = pct_nonzero_other,
           "cluster_mean"  = x_mean,
-          "log2FC"        = x_mean - mean(y),
-          "zscore"        = (x_mean - gene_mean) / gene_sd
+          "log2FC"        = x_mean - mean(y)
+          # "zscore"        = (x_mean - gene_mean) / gene_sd
         )
       }))
     }
