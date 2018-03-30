@@ -9,14 +9,26 @@ setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/R")
 library(ggplot2)
 library(ggrepel)
 library(gdata) 
+library(pbapply)
 
 source("meta_colors.R")
 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
-dat_table[1:4,]
 table(dat_table$cluster)
+test <- dat_table$cell_type
+test[which(test != "All cells")] <- "One cell type cells"
+dat_table$test <- test
 
-dat_high_pct <- dat_table[which(dat_table$pct_nonzero > 0.66),]
+# "All cells" are used for comparing one cluster versus all (18) the other clusters
+# dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
+dim(dat_table)
+
+# Remove th mitochondrial genes
+mito.genes_1 <- grep(pattern = "^MT-", x = dat_table$gene, value = TRUE)
+mito.genes_2 <- grep(pattern = "^MTRNR", x = dat_table$gene, value = TRUE)
+dat_table <- dat_table[-which(dat_table$gene %in% c(mito.genes_1, mito.genes_2)), ] 
+
+dat_high_pct <- dat_table[which(dat_table$pct_nonzero > 0.6),]
 table(dat_high_pct$cluster)
 table(dat_high_pct$cell_type)
 
@@ -27,77 +39,103 @@ dat_high_pct$cluster = factor(dat_high_pct$cluster,
                                        "C-T1", "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7"
                                        ))
 
-
+# Plot AUC vs log2 FC
 ggplot() + 
   geom_point(
     data=dat_high_pct,
     aes(x=auc, 
         y=log2FC,
-        fill = cluster
-        ),
-    size = 1
+        color = test
+    ),
+    size = 0.5
   ) +
-  geom_vline(xintercept = 0.6, linetype="solid", 
-             color = "blue", size=0.2) +
-  geom_hline(yintercept = 2, linetype="solid", 
-             color = "blue", size=0.2) +
+  scale_color_manual(values = c('#1B9E77', '#D95F02'),
+                     name="",
+                     labels=c("One cluster vs all the other clusters",
+                              "One cluster vs the other clusters within the same cell type")) +
+  geom_vline(xintercept = 0.7, linetype="solid", color = "black", size=0.2) +
+  geom_hline(yintercept = 1, linetype="solid", color = "black", size=0.2) +
   facet_wrap(~ cluster, ncol = 4) +
   labs(
-    x = "AUROC",
-    y = "Log2 (FC)"
+    x = "AUC",
+    y = "Log2 (FC)",
+    title = "Genes that percent of non-zero expression > 60% for each cluster"
   ) +
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 22) +
   theme(    
-    legend.position = "none",
     # axis.ticks = element_blank(), 
     # panel.grid = element_blank(),
+    legend.position = "bottom",
     axis.text = element_text(size = 22),
     axis.text.y = element_text(size = 20),
-    axis.text.x = element_text(size = 20, angle = 30)
-    ) +
-  # scale_y_discrete(breaks=NULL)
+    axis.text.x = element_text(size = 20, angle = 30),
+    legend.text = element_text(size = 19),
+    plot.title = element_text(size=22)
+  ) +
   coord_cartesian(
     xlim=c(0, 1), 
     ylim=c(-5, 10)
   ) 
-ggsave(file = paste("auc_log2FC", ".pdf", sep = ""),
-       width = 11, height = 10, dpi = 150)
+ggsave(file = paste("auc_log2FC", ".pdf", sep = ""), width = 13, height = 12)
 dev.off()
 
 
+# Plot AUC vs wilcox p-value
 ggplot() + 
   geom_point(
     data=dat_high_pct,
     aes(x=auc, 
-        y= -log10(wilcox_pvalue)
-        # y= -log10(ttest_pvalue)
+        y= -log10(wilcox_pvalue),
+        # y= -log10(ttest_pvalue),
+        color = test
     ),
-    size = 1
+    size = 0.5
   ) +
-  geom_vline(xintercept = 0.65, linetype="solid", 
-             color = "blue", size=0.2) +
-  geom_hline(yintercept = 20, linetype="solid", 
-              color = "blue", size=0.2) +
+  scale_color_manual(values = c('#1B9E77', '#D95F02'),
+                     name="",
+                     labels=c("One cluster vs all the other clusters",
+                              "One cluster vs the other clusters within the same cell type")) +
+  geom_vline(xintercept = 0.7, linetype="solid", color = "black", size=0.2) +
+  geom_hline(yintercept = 20, linetype="solid", color = "black", size=0.2) +
   facet_wrap(~ cluster, ncol = 4) +
   labs(
-    x = "AUROC",
-    y = "-Log10(wilcox P)"
+    x = "AUC",
+    y = "-Log10 (wilcox P)",
+    title = "Genes that percent of non-zero expression > 60% for each cluster"
   ) +
   theme_bw(base_size = 20) +
   theme(    
-    legend.position = "none",
     # axis.ticks = element_blank(), 
     # panel.grid = element_blank(),
+    legend.position = "bottom",
     axis.text = element_text(size = 22),
     axis.text.y = element_text(size = 20),
-    axis.text.x = element_text(size = 20, angle = 30)
+    axis.text.x = element_text(size = 20, angle = 30),
+    legend.text = element_text(size = 19),
+    plot.title = element_text(size=22)
   ) +
   # scale_y_discrete(breaks=NULL)
   coord_cartesian(
     xlim=c(0, 1),
     ylim=c(0, 300)
   ) 
-ggsave(file = paste("auc_wilcox", ".pdf", sep = ""),
-       width = 12, height = 11, dpi = 150)
+ggsave(file = paste("auc_wilcox", ".pdf", sep = ""), width = 13, height = 12)
 dev.off()
+
+
+
+# Export # genes that pass four criteria:
+# 1) pct_nonzero > 60%, 2) AUC > 0.7, 3) -log10(wilcox p) > 20, and 4) log2FC > 1.
+dat_table$wilcox_pvalue <- -log10(dat_table$wilcox_pvalue)
+dat_table$wilcox_pvalue[which(dat_table$wilcox_pvalue == "Inf")] <- 300
+good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_pvalue > 20 & dat_table$log2FC > 1),]
+table(good_markers$cluster)
+
+
+
+
+
+
+
+
 
