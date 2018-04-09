@@ -22,6 +22,54 @@ clin_meta <- readRDS("../data//filtered_meta_lowinput_phase_1.rds")
 # Read Case.Control labels for OA, non-inflamed RA, and RA
 inflam_label <- read.xls("../data-raw/postQC_all_samples.xlsx")
 inflam_label <- inflam_label[c(1:51),]
+
+# -----------------
+# Plot Figure S1
+
+ggplot() +
+  geom_point(
+    data = inflam_label,
+    mapping = aes(Lymphocytes.Live * 100, Monocytes * 100, fill = disease_tissue),
+    shape = 21, size = 4, stroke = 0.1
+  ) +
+  scale_fill_manual(values = meta_colors$tissue_type) +
+  geom_vline(xintercept = 25, linetype = "dashed") +
+  geom_hline(yintercept = 60, linetype = "dashed") +
+  labs(x = "Lymphocytes/Live by flow (%)", 
+       y = "Monocytes/Live by flow (%)"
+  ) +
+  theme_bw(base_size = 20) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    # legend.position = "none",
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 20, color = "black"),
+    axis.text.x=element_text(size = 20)
+    # axis.text.y = element_text()
+  )
+ggsave(file = paste("postQC_samplse_CD45_lym", ".png", sep = ""), width = 7.5, height = 5, dpi = 200)
+dev.off()
+
+
+
+# bx <- read.xls("../data-raw/postQC_18bx_clin_flow.xlsx")
+# arth <- read.xls("../data-raw/postQC_15OA_18RA_clin_flow.xlsx")
+# all(colnames(bx) == colnames(arth))
+# bx_arth <- rbind.data.frame(bx, arth)
+# rownames(bx_arth) <- bx_arth$Patient
+# rownames(inflam_label) <- inflam_label$Patient
+# all(rownames(inflam_label) == rownames(bx_arth))
+# bx_arth <- bx_arth[ order(match(bx_arth$Patient, inflam_label$Patient)), ]
+# inflam_merge <- cbind.data.frame(inflam_label, bx_arth[,c(15:21, 26:29, 33:41)])
+# dim(inflam_merge)
+# 
+# 
+# write.table(inflam_merge, file = "postQC_all_samples.txt", 
+#              row.names=T,col.names=T, quote = F, sep = "\t")
+
+
+# -----------------
+
 inflam_label <- inflam_label[, c("Patient", "Case.Control")]
 table(inflam_label$Case.Control)
 colnames(inflam_label)[1] <- "Donor.ID"
@@ -56,7 +104,7 @@ if (!file.exists(file_mean_sd)) {
   dat_mean_sd <- readRDS(file_mean_sd)
 }
 
-top_percent <- 0.7
+top_percent <- 0.65
 mat_idx <- with(
   dat_mean_sd,
   mean > quantile(mean, top_percent) &
@@ -67,9 +115,10 @@ all_samples <- log2tpm[mat_idx,]
 dim(all_samples)
 all(clin_merge$Sample.ID == colnames(all_samples))
 
+# ---------------------
+# Fibroblast samples
+# ---------------------
 
-# ----------------------------------------------------------------------------------------
-# fibroblast samples
 cell_type <- "Fibro"
 cell_index <- clin_merge$Cell.type==cell_type
 bulk_all <- log2tpm[cell_index]
@@ -159,6 +208,10 @@ dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 # dev.print("fibro_DE_genes_log2FC.pdf", width = 6, height = 9, dev = pdf)
 # dev.off()
 
+dat_plot$up_down <- dat_plot$logFC
+dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
+dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
+
 
 ggplot() +
   geom_errorbar(data=dat_plot, 
@@ -166,10 +219,10 @@ ggplot() +
                 width=0.5, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC),y= logFC),
-             size = 2
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
+             size = 3
   ) +
-  # scale_color_manual(values = c('grey70', 'black')) +
+  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
@@ -180,17 +233,20 @@ ggplot() +
   ) +
   theme_bw(base_size = 28) +
   theme(    
+    legend.position = "none",
     # axis.ticks = element_blank(), 
     panel.grid = element_blank(),
     axis.text = element_text(size = 26, color = "black"),
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
     )
-dev.print("fibro_DE_genes_log2FC.pdf", width = 11.5, height = 4, dev = pdf)
+dev.print("fibro_DE_genes_log2FC.pdf", width = 11.5, height = 4.5, dev = pdf)
 dev.off()
 
-# ----------------------------------------------------------------------------------------
-# Monocyte samples
+# ---------------------
+# Mono samples
+# ---------------------
+
 cell_type <- "Mono"
 cell_index <- clin_merge$Cell.type==cell_type
 bulk_all <- log2tpm[cell_index]
@@ -226,10 +282,11 @@ toptable_fdr <-topTable(fit, coef = "Case.ControlOA",
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[1:4,]
+toptable_fdr[order(toptable_fdr$logFC, decreasing = T),][1:30,]
 
 outFile = "mono_diff_inflamedRA_OA.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-# toptable_fdr <- read.table("fibro_diff_inflamedRA_OA.txt")
+# toptable_fdr <- read.table("mono_diff_inflamedRA_OA.txt")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
@@ -248,6 +305,11 @@ dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
 dat_plot[which(dat_plot$gene == "HLA.DQA1"),]$gene <- "HLA-DQA1"
 dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 
+dat_plot$up_down <- dat_plot$logFC
+dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
+dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
+
+
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
@@ -255,10 +317,10 @@ ggplot() +
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC),y= logFC),
-             size = 2
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
+             size = 3
   ) +
-  # scale_color_manual(values = c('grey70', 'black')) +
+  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
@@ -269,18 +331,21 @@ ggplot() +
   ) +
   theme_bw(base_size = 28) +
   theme(    
+    legend.position = "none",
     # axis.ticks = element_blank(), 
     panel.grid = element_blank(),
     axis.text = element_text(size = 26, color = "black"),
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("mono_DE_genes_log2FC.pdf", width = 10, height = 4, dev = pdf)
+dev.print("mono_DE_genes_log2FC.pdf", width = 9, height = 4, dev = pdf)
 dev.off()
 
 
-# ----------------------------------------------------------------------------------------
+# ---------------------
 # B cell samples
+# ---------------------
+
 cell_type <- "B cell"
 cell_index <- clin_merge$Cell.type==cell_type
 bulk_all <- log2tpm[cell_index]
@@ -323,10 +388,11 @@ toptable_fdr <-topTable(fit, coef = "Case.ControlOA",
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[1:4,]
+toptable_fdr[order(toptable_fdr$logFC, decreasing = F),][1:50,]
 
 outFile = "bcell_diff_inflamedRA_OA.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-# toptable_fdr <- read.table("fibro_diff_inflamedRA_OA.txt")
+# toptable_fdr <- read.table("bcell_diff_inflamedRA_OA.txt")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
@@ -345,6 +411,10 @@ dat_plot$CI.R <- (-1) * dat_plot$CI.R
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
 dat_plot[which(dat_plot$gene == "HLA.DPB1"),]$gene <- "HLA-DPB1"
 
+dat_plot$up_down <- dat_plot$logFC
+dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
+dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
+
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
@@ -352,9 +422,10 @@ ggplot() +
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC),y= logFC),
-             size = 2
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
+             size = 3
   ) +
+  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   # scale_color_manual(values = c('grey70', 'black')) +
   geom_hline(yintercept = 0, size = 0.3) +
   # scale_x_discrete(position = "top") +
@@ -367,6 +438,7 @@ ggplot() +
   theme_bw(base_size = 28) +
   theme(    
     # axis.ticks = element_blank(), 
+    legend.position = "none",
     panel.grid = element_blank(),
     axis.text = element_text(size = 26, color = "black"),
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
@@ -375,4 +447,107 @@ ggplot() +
 dev.print("bcell_DE_genes_log2FC.pdf", width = 10, height = 3.7, dev = pdf)
 dev.off()
 
+
+# ---------------------
+# T cell samples
+# ---------------------
+
+cell_type <- "T cell"
+cell_index <- clin_merge$Cell.type==cell_type
+bulk_all <- log2tpm[cell_index]
+bulk_m <- clin_merge[cell_index,]
+bulk_samples <- bulk_all[mat_idx,]
+dim(bulk_m)
+dim(bulk_samples)
+all(bulk_m$Sample.ID == colnames(bulk_samples))
+
+# -------------------------------------------------
+# inflamed RA vs OA differential analysis 
+bulk_samples <- bulk_samples[, -which(bulk_m$Case.Control == "non-inflamed RA")]
+bulk_m <- bulk_m[-which(bulk_m$Case.Control == "non-inflamed RA"), ]
+bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+all(bulk_m$Sample.ID == colnames(bulk_samples))
+
+# # inflamed RA vs (OA + non-inflamed RA) differential analysis 
+# bulk_m[which(bulk_m$Case.Control == "non-inflamed RA"), ]$Case.Control <- "OA"
+# bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+# all(bulk_m$Sample.ID == colnames(bulk_samples))
+# table(bulk_m$Case.Control)
+
+# Use Limma R function by fitting data access group and plates as covariates 
+des <- with(
+  bulk_m,
+  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
+  model.matrix(~ Case.Control)
+)
+
+# Fit the model to each gene
+fit <- lmFit(object = bulk_samples, design = des)
+
+# Share variance across genes
+fit <- eBayes(fit)
+
+# BH FDR control is used
+colnames(fit$coefficients)
+toptable_fdr <-topTable(fit, coef = "Case.ControlOA", 
+                        number=nrow(bulk_samples), adjust.method="BH", 
+                        confint=TRUE,
+                        sort.by="p")
+toptable_fdr[order(toptable_fdr$logFC, decreasing = T),][1:50,]
+
+outFile = "tcell_diff_inflamedRA_OA.txt"
+write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
+# toptable_fdr <- read.table("tcell_diff_inflamedRA_OA.txt")
+
+# Show CCA genes (also the single-cell RNA-seq cluster markers)
+dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
+                                 c("HLA.DQA2", "CXCL13", "CCL4L2", "IFNG",
+                                   "PDCD1", "NFKBIZ", "CTLA4", # "IL1B",
+                                   "TIGIT", "ICOS", "CCR7", "SELL", # "CD200",
+                                   "GEM", "NFKBID", "NR4A2", "CLECL1","PTGR1" # "SPINT1", "STX3", "SPINT"
+                                 )),]
+
+dat_plot$gene <- rownames(dat_plot)
+dat_plot$logFC <- (-1) * dat_plot$logFC
+dat_plot$CI.L <- (-1) * dat_plot$CI.L
+dat_plot$CI.R <- (-1) * dat_plot$CI.R
+
+# Change HLA.DRA to HLA-DRA
+# dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
+dat_plot[which(dat_plot$gene == "HLA.DQA2"),]$gene <- "HLA-DQA2"
+
+dat_plot$up_down <- dat_plot$logFC
+dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
+dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
+
+# Plot genes based on logFC
+ggplot() +
+  geom_errorbar(data=dat_plot, 
+                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                width=0.3, size=0.9, color = "black"
+  ) +
+  geom_point(data=dat_plot, 
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
+             size = 3
+  ) +
+  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
+  geom_hline(yintercept = 0, size = 0.3) +
+  # scale_x_discrete(position = "top") +
+  # scale_y_reverse() +
+  # scale_x_discrete(position = "top") +
+  # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  labs(x = NULL, 
+       y = "Log2 (FC)"
+  ) +
+  theme_bw(base_size = 28) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    legend.position = "nonoe",
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 26, color = "black"),
+    axis.text.x=element_text(angle=45, hjust=1, size = 25)
+    # axis.text.y = element_text()
+  )
+dev.print("tcell_DE_genes_log2FC.pdf", width = 10, height = 4, dev = pdf)
+dev.off()
 
