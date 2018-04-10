@@ -13,14 +13,11 @@ The files in the repo are organized as follows:
 
     .
     ├── R
-    ├── data
-    └── data-raw
+    |── data
 
 `R/` has code for analysis and creating figures.
 
-`data/` has RData files with processed data ready for analysis.
-
-`data-raw` has other data files including Excel sheets with sample metadata.
+`data/` has Excel sheets with sample metadata and RData files with processed data ready for analysis.
 
 ## Getting Started
 
