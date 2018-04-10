@@ -18,13 +18,19 @@ source("../R/meta_colors.R")
 
 all_postQC <- readRDS("../data/all_postQC_for_barplot.rds")
 
+inflam_label <- read.xls("../data-raw/postQC_all_samples.xlsx")
+colnames(inflam_label)[1] <- "Sample"
+
+dat_merge <- merge(all_postQC, inflam_label, by = "Sample")
+
 ggplot() +
   geom_bar(
-    data = all_postQC,
+    data = dat_merge,
     mapping = aes(x = reorder(Sample, value), weight = value, fill = Type),
     colour="black"
   ) +
-  facet_grid(variable ~ DiseaseAssay, scales = "free", space = "free_x") +
+  # facet_grid(variable ~ DiseaseAssay, scales = "free", space = "free_x") +
+  facet_grid(variable ~ lym_25, scales = "free", space = "free_x") +
   theme_bw(base_size = 20) +
   scale_fill_manual(values = meta_colors$type, name = "Cell Type") +
   theme(
@@ -40,7 +46,7 @@ ggplot() +
        x = NULL, 
        y = NULL
        )
-ggsave(file = paste("barplot_all_postQC", ".png", sep = ""), width = 18, height = 8, dpi = 200)
+ggsave(file = paste("barplot_all_postQC", ".pdf", sep = ""), width = 18, height = 8, dpi = 200)
 dev.off()
 
 

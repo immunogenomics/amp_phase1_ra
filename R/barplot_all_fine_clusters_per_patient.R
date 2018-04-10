@@ -39,10 +39,9 @@ dim(dat)
 
 # Read Case.Control labels for OA, non-inflamed RA, and RA
 inflam_label <- read.xls("../data-raw/postQC_all_samples.xlsx")
-inflam_label <- inflam_label[c(1:51),]
-table(inflam_label$Case.Control)
+table(inflam_label$lym_25)
 inflam_label <- inflam_label[which(inflam_label$Patient %in% dat$sample), ]
-inflam_label <- inflam_label[, c("Patient", "Disease", "Tissue.type", "Case.Control")]
+inflam_label <- inflam_label[, c("Patient", "Disease", "Tissue.type", "lym_25")]
 colnames(inflam_label)[1] <- "sample"
 plot_final <- merge(dat, inflam_label, by = "sample")
 dim(plot_final)
@@ -55,11 +54,11 @@ type[grep("T-", plot_final$fine_cluster)] <- "T cell"
 type[grep("M-", plot_final$fine_cluster)] <- "Monocyte"
 plot_final$type <- type
 
-plot_final$Case_Control_order = factor(plot_final$Case.Control, levels=c('OA','non-inflamed RA','inflamed RA'))
+plot_final$CD45_49_order = factor(plot_final$lym_25, levels=c('OA','non-inflamed RA','inflamed RA'))
 plot_final$type_order = factor(plot_final$type, levels=c('Fibroblast','T cell','B cell', 'Monocyte'))
 
 # saveRDS(plot_final, "barplot_sc_cluster_per_patient.rds")
-plot_final <- readRDS("../data/barplot_sc_cluster_per_patient.rds")
+# plot_final <- readRDS("../data/barplot_sc_cluster_per_patient.rds")
   
 # Plot cells from all single-cell RNA-seq clusters for each patient
 ggplot(
@@ -68,23 +67,24 @@ ggplot(
   ) +
   geom_bar(stat="identity",
            # position = "fill"
-           position = "stack"
+           position = "stack",
+           width = 0.85
            ) +
-  facet_grid(type_order ~ Case_Control_order, scales = "free", space = "free_x") +
+  facet_grid(type_order ~ CD45_49_order, scales = "free", space = "free_x") +
   scale_fill_manual("", values = meta_colors$fine_cluster) +
   labs(
     x = "Donors",
     # y = "Proportion of all clusters"
     y = "Number of cells"
   ) +
-  theme_bw(base_size = 25.5) +
+  theme_bw(base_size = 27) +
   theme(    
         # axis.ticks = element_blank(), 
         panel.grid = element_blank(),
         axis.text = element_text(size = 25),
-        axis.text.x=element_text(angle=35, hjust=1),
-        axis.text.y = element_text(size = 35))
-ggsave(file = paste("barplot_sc_cluster_per_patient", ".pdf", sep = ""),
-       width = 15, height = 12, dpi = 300)
+        axis.text.x=element_text(angle=30, hjust=1),
+        axis.text.y = element_text(size = 30))
+ggsave(file = paste("barplot_sc_cluster_per_patient_lym_25", ".pdf", sep = ""),
+       width = 14, height = 11, dpi = 300)
 dev.off()
 

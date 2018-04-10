@@ -19,63 +19,59 @@ log2tpm <- readRDS("../data//filtered_log2tpm_lowinput_phase_1.rds")
 clin_meta <- readRDS("../data//filtered_meta_lowinput_phase_1.rds")
 
 
-# Read Case.Control labels for OA, non-inflamed RA, and RA
+# Read CD45_49 labels for OA, non-inflamed RA, and RA
 inflam_label <- read.xls("../data-raw/postQC_all_samples.xlsx")
-inflam_label <- inflam_label[c(1:51),]
 
-# -----------------
-# Plot Figure S1
+# # -----------------
+# # Plot Figure S1
 
 ggplot() +
   geom_point(
     data = inflam_label,
-    mapping = aes(Lymphocytes.Live * 100, Monocytes * 100, fill = disease_tissue),
+    mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = CD45_49),
+    # mapping = aes(Lymphocytes.Live * 100, Monocytes * 100, fill = disease_tissue),
     shape = 21, size = 4, stroke = 0.1
   ) +
   scale_fill_manual(values = meta_colors$tissue_type) +
   geom_vline(xintercept = 25, linetype = "dashed") +
-  geom_hline(yintercept = 60, linetype = "dashed") +
-  labs(x = "Lymphocytes/Live by flow (%)", 
-       y = "Monocytes/Live by flow (%)"
+  geom_hline(yintercept = 47, linetype = "dashed") +
+  labs(x = "Lymphocytes/Live by flow (%)",
+       y = "CD45+/Live by flow (%)"
   ) +
   theme_bw(base_size = 20) +
-  theme(    
-    # axis.ticks = element_blank(), 
+  theme(
+    # axis.ticks = element_blank(),
     # legend.position = "none",
     panel.grid = element_blank(),
     axis.text = element_text(size = 20, color = "black"),
     axis.text.x=element_text(size = 20)
     # axis.text.y = element_text()
   )
-ggsave(file = paste("postQC_samplse_CD45_lym", ".png", sep = ""), width = 7.5, height = 5, dpi = 200)
+ggsave(file = paste("postQC_samplse_mono_lym", ".pdf", sep = ""), width = 7.5, height = 5, dpi = 200)
 dev.off()
 
-
-
-# bx <- read.xls("../data-raw/postQC_18bx_clin_flow.xlsx")
-# arth <- read.xls("../data-raw/postQC_15OA_18RA_clin_flow.xlsx")
-# all(colnames(bx) == colnames(arth))
-# bx_arth <- rbind.data.frame(bx, arth)
-# rownames(bx_arth) <- bx_arth$Patient
-# rownames(inflam_label) <- inflam_label$Patient
-# all(rownames(inflam_label) == rownames(bx_arth))
-# bx_arth <- bx_arth[ order(match(bx_arth$Patient, inflam_label$Patient)), ]
-# inflam_merge <- cbind.data.frame(inflam_label, bx_arth[,c(15:21, 26:29, 33:41)])
-# dim(inflam_merge)
+# inflam_label$lym_25 <- inflam_label$Disease
+# inflam_label$lym_25 <- as.character(inflam_label$lym_25)
+# inflam_label$lym_25[which(inflam_label$Lymphocytes.Live > 0.25 &
+#                            inflam_label$Disease != "OA")] <- "inflamed RA"
+# inflam_label$lym_25[which(inflam_label$lym_25 == "RA")] <- "non-inflamed RA"
+# table(inflam_label$lym_25)
 # 
+# inflam_label <- inflam_label[order(inflam_label$disease_tissue),]
 # 
-# write.table(inflam_merge, file = "postQC_all_samples.txt", 
+# write.table(inflam_label, file = "postQC_all_samples.txt",
 #              row.names=T,col.names=T, quote = F, sep = "\t")
+# 
 
 
 # -----------------
 
-inflam_label <- inflam_label[, c("Patient", "Case.Control")]
-table(inflam_label$Case.Control)
+inflam_label <- inflam_label[, c("Patient", "CD45_49")]
+table(inflam_label$CD45_49)
 colnames(inflam_label)[1] <- "Donor.ID"
 
 clin_merge <- merge(clin_meta, inflam_label, by = "Donor.ID")
-table(clin_merge$Case.Control)
+table(clin_merge$CD45_49)
 
 clin_merge <- clin_merge[order(match(clin_merge$Sample.ID, colnames(log2tpm))), ]
 all(clin_merge$Sample.ID == colnames(log2tpm))
@@ -130,16 +126,16 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # -------------------------------------------------
 # inflamed RA vs OA differential analysis 
-bulk_samples <- bulk_samples[, -which(bulk_m$Case.Control == "non-inflamed RA")]
-bulk_m <- bulk_m[-which(bulk_m$Case.Control == "non-inflamed RA"), ]
-bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+bulk_samples <- bulk_samples[, -which(bulk_m$CD45_49 == "non-inflamed RA")]
+bulk_m <- bulk_m[-which(bulk_m$CD45_49 == "non-inflamed RA"), ]
+bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
   bulk_m,
-  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
-  model.matrix(~ Case.Control)
+  # model.matrix(~ CD45_49 + Data.Access.Group + cDNA.plate)
+  model.matrix(~ CD45_49)
 )
 
 # Fit the model to each gene
@@ -149,22 +145,22 @@ fit <- lmFit(object = bulk_samples, design = des)
 fit <- eBayes(fit)
 
 # BH FDR control is used
-toptable_fdr <-topTable(fit, coef = "Case.ControlOA", 
+toptable_fdr <-topTable(fit, coef = "CD45_49OA", 
                         number=nrow(bulk_samples), adjust.method="BH", 
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[1:4,]
 
-outFile = "fibro_diff_inflamedRA_OA.txt"
+outFile = "fibro_diff_inflamedRA_OA_CD45_49.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-# toptable_fdr <- read.table("fibro_diff_inflamedRA_OA.txt")
+# toptable_fdr <- read.table("fibro_diff_inflamedRA_OA_CD45_49.txt")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
                          c("HBEGF", "CLIC5", "HTRA1", "PRG4", "CD55", "DNASE1L3",
                            "PTGFR", "FOS", "F3", "HLA.DRA", # "C3", 
                            "IL6", "HLA.DPA1", "HLA.DRB1", # "IFI30", 
-                           "DKK3", "CADM1", # "CAPG", "AKR1C2", "COL8A2",
+                           "CADM1", # "DKK3", "CAPG", "AKR1C2", "COL8A2",
                            "ACTA2", "CD34", # "MCAM", "MYH11"
                            "IRF1", "CXCL12", "PDGFRB"
                                )),]
@@ -240,7 +236,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
     )
-dev.print("fibro_DE_genes_log2FC.pdf", width = 11.5, height = 4.5, dev = pdf)
+dev.print("fibro_DE_genes_log2FC_CD45_49.pdf", width = 11.5, height = 4.5, dev = pdf)
 dev.off()
 
 # ---------------------
@@ -258,16 +254,16 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # -------------------------------------------------
 # inflamed RA vs OA differential analysis 
-bulk_samples <- bulk_samples[, -which(bulk_m$Case.Control == "non-inflamed RA")]
-bulk_m <- bulk_m[-which(bulk_m$Case.Control == "non-inflamed RA"), ]
-bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+bulk_samples <- bulk_samples[, -which(bulk_m$CD45_49 == "non-inflamed RA")]
+bulk_m <- bulk_m[-which(bulk_m$CD45_49 == "non-inflamed RA"), ]
+bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
   bulk_m,
-  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
-  model.matrix(~ Case.Control)
+  # model.matrix(~ CD45_49 + Data.Access.Group + cDNA.plate)
+  model.matrix(~ CD45_49)
 )
 
 # Fit the model to each gene
@@ -277,14 +273,14 @@ fit <- lmFit(object = bulk_samples, design = des)
 fit <- eBayes(fit)
 
 # BH FDR control is used
-toptable_fdr <-topTable(fit, coef = "Case.ControlOA", 
+toptable_fdr <-topTable(fit, coef = "CD45_49OA", 
                         number=nrow(bulk_samples), adjust.method="BH", 
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[1:4,]
 toptable_fdr[order(toptable_fdr$logFC, decreasing = T),][1:30,]
 
-outFile = "mono_diff_inflamedRA_OA.txt"
+outFile = "mono_diff_inflamedRA_OA_CD45_49.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 # toptable_fdr <- read.table("mono_diff_inflamedRA_OA.txt")
 
@@ -338,7 +334,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("mono_DE_genes_log2FC.pdf", width = 9, height = 4, dev = pdf)
+dev.print("mono_DE_genes_log2FC_CD45_49.pdf", width = 9, height = 4, dev = pdf)
 dev.off()
 
 
@@ -357,22 +353,22 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # -------------------------------------------------
 # inflamed RA vs OA differential analysis 
-bulk_samples <- bulk_samples[, -which(bulk_m$Case.Control == "non-inflamed RA")]
-bulk_m <- bulk_m[-which(bulk_m$Case.Control == "non-inflamed RA"), ]
-bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+bulk_samples <- bulk_samples[, -which(bulk_m$CD45_49 == "non-inflamed RA")]
+bulk_m <- bulk_m[-which(bulk_m$CD45_49 == "non-inflamed RA"), ]
+bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # # inflamed RA vs (OA + non-inflamed RA) differential analysis 
-# bulk_m[which(bulk_m$Case.Control == "non-inflamed RA"), ]$Case.Control <- "OA"
-# bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+# bulk_m[which(bulk_m$CD45_49 == "non-inflamed RA"), ]$CD45_49 <- "OA"
+# bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 # all(bulk_m$Sample.ID == colnames(bulk_samples))
-# table(bulk_m$Case.Control)
+# table(bulk_m$CD45_49)
 
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
   bulk_m,
-  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
-  model.matrix(~ Case.Control)
+  # model.matrix(~ CD45_49 + Data.Access.Group + cDNA.plate)
+  model.matrix(~ CD45_49)
 )
 
 # Fit the model to each gene
@@ -383,14 +379,14 @@ fit <- eBayes(fit)
 
 # BH FDR control is used
 colnames(fit$coefficients)
-toptable_fdr <-topTable(fit, coef = "Case.ControlOA", 
+toptable_fdr <-topTable(fit, coef = "CD45_49OA", 
                         number=nrow(bulk_samples), adjust.method="BH", 
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[1:4,]
 toptable_fdr[order(toptable_fdr$logFC, decreasing = F),][1:50,]
 
-outFile = "bcell_diff_inflamedRA_OA.txt"
+outFile = "bcell_diff_inflamedRA_OA_CD45_49.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 # toptable_fdr <- read.table("bcell_diff_inflamedRA_OA.txt")
 
@@ -444,7 +440,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("bcell_DE_genes_log2FC.pdf", width = 10, height = 3.7, dev = pdf)
+dev.print("bcell_DE_genes_log2FC_CD45_49.pdf", width = 10, height = 3.7, dev = pdf)
 dev.off()
 
 
@@ -463,22 +459,22 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # -------------------------------------------------
 # inflamed RA vs OA differential analysis 
-bulk_samples <- bulk_samples[, -which(bulk_m$Case.Control == "non-inflamed RA")]
-bulk_m <- bulk_m[-which(bulk_m$Case.Control == "non-inflamed RA"), ]
-bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+bulk_samples <- bulk_samples[, -which(bulk_m$CD45_49 == "non-inflamed RA")]
+bulk_m <- bulk_m[-which(bulk_m$CD45_49 == "non-inflamed RA"), ]
+bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 all(bulk_m$Sample.ID == colnames(bulk_samples))
 
 # # inflamed RA vs (OA + non-inflamed RA) differential analysis 
-# bulk_m[which(bulk_m$Case.Control == "non-inflamed RA"), ]$Case.Control <- "OA"
-# bulk_m$Case.Control <- as.character(bulk_m$Case.Control)
+# bulk_m[which(bulk_m$CD45_49 == "non-inflamed RA"), ]$CD45_49 <- "OA"
+# bulk_m$CD45_49 <- as.character(bulk_m$CD45_49)
 # all(bulk_m$Sample.ID == colnames(bulk_samples))
-# table(bulk_m$Case.Control)
+# table(bulk_m$CD45_49)
 
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
   bulk_m,
-  # model.matrix(~ Case.Control + Data.Access.Group + cDNA.plate)
-  model.matrix(~ Case.Control)
+  # model.matrix(~ CD45_49 + Data.Access.Group + cDNA.plate)
+  model.matrix(~ CD45_49)
 )
 
 # Fit the model to each gene
@@ -489,7 +485,7 @@ fit <- eBayes(fit)
 
 # BH FDR control is used
 colnames(fit$coefficients)
-toptable_fdr <-topTable(fit, coef = "Case.ControlOA", 
+toptable_fdr <-topTable(fit, coef = "CD45_49OA", 
                         number=nrow(bulk_samples), adjust.method="BH", 
                         confint=TRUE,
                         sort.by="p")
