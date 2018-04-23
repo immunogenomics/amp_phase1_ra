@@ -21,10 +21,10 @@ test[which(test != "All cells")] <- "One cell type cells"
 dat_table$test <- test
 
 # "All cells" are used for comparing one cluster versus all (18) the other clusters
-dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
-dim(dat_table)
+# dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
+# dim(dat_table)
 
-# Remove th mitochondrial genes
+# Remove the mitochondrial genes
 mito.genes_1 <- grep(pattern = "^MT-", x = dat_table$gene, value = TRUE)
 mito.genes_2 <- grep(pattern = "^MTRNR", x = dat_table$gene, value = TRUE)
 dat_table <- dat_table[-which(dat_table$gene %in% c(mito.genes_1, mito.genes_2)), ] 
@@ -41,19 +41,27 @@ dat_high_pct$cluster = factor(dat_high_pct$cluster,
                                        ))
 
 # Plot AUC vs log2 FC
+dat_plot <- dat_high_pct[which(dat_high_pct$test == "All cells"),]
+dat_plot$sig <- rep(0, nrow(dat_plot))
+dat_plot$sig[which(dat_plot$auc > 0.7 & dat_plot$log2FC > 1)] <- 1
+dat_plot$sig <- as.factor(dat_plot$sig)
+
 ggplot() + 
   geom_point(
-    data=dat_high_pct,
+    data=dat_plot,
     aes(x=auc, 
         y=log2FC,
-        color = test
+        color = sig
     ),
     size = 0.5
   ) +
-  scale_color_manual(values = c('#1B9E77', '#D95F02'),
+  scale_color_manual(values = c('grey', '#D95F02'), # c('#1B9E77', '#D95F02'),
                      name="",
-                     labels=c("One cluster vs all the other clusters",
-                              "One cluster vs the other clusters within the same cell type")) +
+                     # labels= c("One cluster vs all the other clusters",
+                     #          "One cluster vs the other clusters within the same cell type")
+                     labels= c("",
+                               "Genes with AUC > 0.7, Log2(FC) > 1, and non-zero expression > 60%")
+                     ) +
   geom_vline(xintercept = 0.7, linetype="solid", color = "black", size=0.2) +
   geom_hline(yintercept = 1, linetype="solid", color = "black", size=0.2) +
   facet_wrap(~ cluster, ncol = 4) +
@@ -72,12 +80,12 @@ ggplot() +
     axis.text.x = element_text(size = 20, angle = 30),
     legend.text = element_text(size = 19),
     plot.title = element_text(size=22)
-  ) +
-  coord_cartesian(
-    xlim=c(0, 1), 
-    ylim=c(-5, 10)
   ) 
-ggsave(file = paste("auc_log2FC", ".pdf", sep = ""), width = 13, height = 12)
+  # coord_cartesian(
+  #   xlim=c(0, 1),
+  #   ylim=c(-5, 10)
+  # ) 
+ggsave(file = paste("auc_log2FC_test2_goodcells", ".pdf", sep = ""), width = 13, height = 12)
 dev.off()
 
 
@@ -131,7 +139,8 @@ dev.off()
 dat_table$wilcox_log <- -log10(dat_table$wilcox_pvalue)
 dat_table$wilcox_log[which(dat_table$wilcox_log == "Inf")] <- 300
 
-good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_log > 20 & dat_table$log2FC > 1),]
+# good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_log > 20 & dat_table$log2FC > 1),]
+good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$log2FC > 1),]
 good_markers$cluster = factor(good_markers$cluster, 
                               levels=c("C-F1", "C-F2", "C-F3", "C-F4",
                                        "C-M1", "C-M2", "C-M3", "C-M4",

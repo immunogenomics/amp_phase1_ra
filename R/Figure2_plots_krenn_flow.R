@@ -19,23 +19,22 @@ source("R/pure_functions.R")
 source("R/meta_colors.R")
 
 # Read the 51 post-QC data from postQC_all_samples.xlsx
-dat <- read.xls("data-raw/postQC_all_samples.xlsx")
+dat <- read.xls("data/postQC_all_samples.xlsx")
 dim(dat)
-dat <- dat[c(1:51),]
-table(dat$Case.Control)
+table(dat$Mahalanobis_20)
 
-# Load flow cytometry data that collected by Kevin
-flow <- read.xls("data-raw/171215_FACS_data_for_figure.xlsx")
-flow_qc <- flow[which(flow$Sample.ID %in% dat$Patient),]
-dim(flow_qc)
-colnames(flow_qc)[2] <- "Patient"
+# # Load flow cytometry data that collected by Kevin
+# flow <- read.xls("data/171215_FACS_data_for_figure.xlsx")
+# flow_qc <- flow[which(flow$Sample.ID %in% dat$Patient),]
+# dim(flow_qc)
+# colnames(flow_qc)[2] <- "Patient"
+# 
+# dat_all <- merge(dat, flow_qc, by = "Patient")
+# dim(dat_all)
+# table(dat_all$Case.Control)
 
-dat_all <- merge(dat, flow_qc, by = "Patient")
-dim(dat_all)
-table(dat_all$Case.Control)
-
-
-dat_all$Case.Control <- factor(dat_all$Case.Control,
+dat_all <- dat
+dat_all$Mahalanobis_20 <- factor(dat_all$Mahalanobis_20,
                        levels = c('OA','non-inflamed RA', "inflamed RA"),ordered = TRUE)
 
 # ---
@@ -67,10 +66,10 @@ dat_all$Case.Control <- factor(dat_all$Case.Control,
 
 
 
-dat_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(B.cells))
+dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells))
 
 ggplot(data=dat_all, 
-       mapping = aes(x=Case.Control, y=B.cells, fill=Case.Control)) +
+       mapping = aes(x=Mahalanobis_20, y=100 * B.cells, fill=Mahalanobis_20)) +
   geom_quasirandom(
     shape = 21, size = 4
   ) +
@@ -101,10 +100,10 @@ ggsave(
 # ---
 # Plot T cells/total live cells by flow
 # ---
-dat_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(T.cells))
+dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(T.cells))
 
 ggplot(data=dat_all, 
-       mapping = aes(x=Case.Control, y=T.cells, fill=Case.Control)) +
+       mapping = aes(x=Mahalanobis_20, y=100*T.cells, fill=Mahalanobis_20)) +
   geom_quasirandom(
     shape = 21, size = 4
   ) +
@@ -142,21 +141,21 @@ dim(dat_kren)
 dat_kren$Krenn.Score.Inflammation <- as.numeric(as.character(dat_kren$Krenn.Score.Inflammation))
 dat_kren$Krenn.Score.Lining <- as.numeric(as.character(dat_kren$Krenn.Score.Lining))
 
-t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "inflamed RA")],
-       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "non-inflamed RA")],
+t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "inflamed RA")],
+       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "non-inflamed RA")],
        alternative ="greater")
-# p-value = 0.004
+# p-value = 0.0016
 
-t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "inflamed RA")],
-       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "OA")],
+t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "inflamed RA")],
+       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "OA")],
        alternative ="greater")
-# p-value = 0.005
+# p-value = 0.0040
 
 
-t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "inflamed RA")],
-       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control %in% c("OA", "on-inflamed RA"))],
+t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "inflamed RA")],
+       dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 %in% c("OA", "on-inflamed RA"))],
        alternative ="greater")
-
+# p-value = 0.0040
 
 # Symbol meaning
 # ns P > 0.05
@@ -173,10 +172,10 @@ t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Case.Control == "inflame
 # Plot Krenn inflammatory score
 # ---
 
-dat_median <- dat_kren %>% group_by(Case.Control) %>% summarise(median = median(Krenn.Score.Inflammation))
+dat_median <- dat_kren %>% group_by(Mahalanobis_20) %>% summarise(median = median(Krenn.Score.Inflammation))
 
 ggplot(data=dat_kren, 
-       mapping = aes(x=Case.Control, y=Krenn.Score.Inflammation, fill=Case.Control)) +
+       mapping = aes(x=Mahalanobis_20, y=Krenn.Score.Inflammation, fill=Mahalanobis_20)) +
   geom_quasirandom(
     shape = 21, size = 4
   ) +
@@ -207,10 +206,10 @@ ggsave(
 # ---
 # Plot Krenn lining 
 # ---
-dat_median <- dat_kren %>% group_by(Case.Control) %>% summarise(median = median(Krenn.Score.Lining))
+dat_median <- dat_kren %>% group_by(Mahalanobis_20) %>% summarise(median = median(Krenn.Score.Lining))
 
 ggplot(data=dat_kren, 
-       mapping = aes(x=Case.Control, y=Krenn.Score.Lining, fill=Case.Control)) +
+       mapping = aes(x=Mahalanobis_20, y=Krenn.Score.Lining, fill=Mahalanobis_20)) +
   geom_quasirandom(
     shape = 21, size = 4
   ) +
@@ -263,15 +262,15 @@ ggsave(
 # ---
 
 # Spearman correlation
-cor(dat_kren$Krenn.Score.Inflammation, dat_kren$Lymphocytes, method = "spearman")
+cor(dat_kren$Krenn.Score.Inflammation, dat_kren$Lymphocytes.Live, method = "spearman")
 
-fit <- lm(Krenn.Score.Inflammation ~ Lymphocytes, data = dat_kren)
+fit <- lm(Krenn.Score.Inflammation ~ Lymphocytes.Live, data = dat_kren)
 summary(fit)
 summary(fit)$adj.r.squared
 summary(fit)$r.squared
 summary(fit)$coefficients[2,"Pr(>|t|)"]
 
-fit$model$Case.Control <- dat_kren$Case.Control
+fit$model$Mahalanobis_20 <- dat_kren$Mahalanobis_20
 
 # Put the P-value and R-square in the right lower corner
 d1 <- paste("P", "==", "7E-05", sep="") 
@@ -280,8 +279,8 @@ ggplot(
   fit$model,
   aes(
     x=Krenn.Score.Inflammation,
-    y=Lymphocytes* 100,
-    fill = Case.Control
+    y=Lymphocytes.Live* 100,
+    fill = Mahalanobis_20
     )
   ) +
   geom_point(
@@ -325,17 +324,17 @@ dat_all$Endothelial <- as.numeric(as.character(dat_all$Endothelial))
 dat_all$Fibroblasts <- as.numeric(as.character(dat_all$Fibroblasts))
 dat_all$Other <- as.numeric(as.character(dat_all$Other))
 
-bcell_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(B.cells))
-cd4_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(CD4.T.cells))
-cd8_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(CD8.T.cells.))
-endo_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Endothelial))
-fibro_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Fibroblasts))
-mono_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Monocytes))
-other_median <- dat_all %>% group_by(Case.Control) %>% summarise(median = median(Other))
+bcell_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells.y))
+cd4_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD4.T.cells.y))
+cd8_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD8.T.cells.))
+endo_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Endothelial))
+fibro_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Fibroblasts))
+mono_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Monocytes.y))
+other_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Other))
 
 dat_median = data.frame(
   bcell = bcell_median$median,
-  cd4 = cd4_median$median,
+  cd4 = cd4_median$median ,
   cd8 = cd8_median$median,
   endo = endo_median$median,
   fibro = fibro_median$median,
@@ -345,7 +344,7 @@ dat_median = data.frame(
 dat_median <- t(dat_median)
 
 dat_percent = data.frame(
-  disease = c(rep("OA", 7), rep("non-inflamed RA", 7), rep("inflamed RA", 7)),
+  disease = c(rep("inflamed RA", 7), rep("non-inflamed RA", 7), rep("OA", 7)),
   flow_gate = rep(c("B cell", "CD4 T cell", "CD8 T cell", "Endothelial cell", "Fibroblast", "Monocyte", "Other"), 3),
   flow_value = c(dat_median[,1], dat_median[,2], dat_median[,3])  
 )

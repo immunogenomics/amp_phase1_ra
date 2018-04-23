@@ -13,30 +13,16 @@ auroc <- function(score, cls) {
 
 # cca <- readRDS("data/allcelltypes_cca_7465_genes.rds")
 
-log2cpm <- readRDS("data/celseq_synovium_log2_postQC.rds")
+log2cpm <- readRDS("data/celseq_synovium_log2_5452cells_paper.rds")
 
-meta <- readRDS("data/celseq_synovium_meta.rds")
-meta <- meta[order(meta$cell_name),]
+meta <- readRDS("data/celseq_synovium_meta_5452cells_paper.rds")
+# meta <- meta[order(meta$cell_name),]
 meta$cell_name <- as.character(meta$cell_name)
-
-x <- readRDS("/data/srlab/slowikow/github.com/immunogenomics/ampviewer/data/all_cells_fine_cluster_label.rds")
-x <- x[order(rownames(x)),]
-
-meta <- meta[meta$cell_name %in% rownames(x),]
-
-stopifnot(all(rownames(x) == meta$cell_name))
-
-log2cpm <- log2cpm[,meta$cell_name]
 
 stopifnot(all(colnames(log2cpm) == meta$cell_name))
 
-# tSNE coordinates
-meta$T1 <- x$T1
-meta$T2 <- x$T2
-
 # cluster assignment
-meta$cluster <- x$fine_cluster
-meta$cluster <- sprintf("C-%s", str_replace(meta$cluster, "-", ""))
+meta$cluster <- sprintf("C-%s", str_replace(meta$fine_cluster, "-", ""))
 
 # Count how many cells express each gene.
 log2cpm_ncells <- apply(log2cpm, 1, function(row) {
@@ -125,7 +111,7 @@ dat_marker <- rbindlist(list(dat_marker, cell_type_markers))
 
 x <- dat_marker[
   cell_type != "All cells",
-  .SD[order(-.SD$auc),][1:3],
+  .SD[order(-.SD$auc),][1:10],
   by = cluster
 ]
 
