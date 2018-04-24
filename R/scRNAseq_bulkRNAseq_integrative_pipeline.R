@@ -1,4 +1,3 @@
-
 #' ---
 #' title: "Single-cell RNA-seq clustering"
 #' Integrative pipeline of integrating bulk RNA-seq with single-cell RNA-seq and then unbiased clustering
@@ -6,7 +5,7 @@
 #' date: "2018-03-19"
 #' ---
 #' 
-setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/")
+setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/R/")
 
 library(devtools)
 library(igraph)
@@ -26,8 +25,8 @@ library(superheat)
 library(biomaRt)
 require(gdata)
 
-source("R/meta_colors.R")
-source("R/pure_functions.R")
+source("meta_colors.R")
+source("pure_functions.R")
 
 # -------
 # Main steps
@@ -60,10 +59,15 @@ source("R/pure_functions.R")
 
 
 # Read the post-QC single-cell RNA-seq expression data and meta data
-dat <- readRDS(file = paste("data/log2cpm", ".rds", sep = ""))
-sc_meta <- readRDS(file = paste("data/meta", ".rds", sep = ""))
+dat <- readRDS(file = paste("../data/celseq_synovium_log2_postQC", ".rds", sep = ""))
+sc_meta <- readRDS(file = paste("../data/celseq_synovium_meta", ".rds", sep = ""))
 all(colnames(dat) == sc_meta$cell_name)
 dim(dat)
+
+# all_fine <- readRDS(file = paste("data/all_cells_fine_cluster_label", ".rds", sep = "")) 
+# dat <- dat[, which(colnames(dat) %in% rownames(all_fine))]
+# sc_meta <- sc_meta[which(sc_meta$cell_name %in% rownames(all_fine)),]
+# all(colnames(dat) == sc_meta$cell_name)
 
 file_mean_sd <- "data/celseq_synovium_log2cpm_mean_sd.rds"
 if (!file.exists(file_mean_sd)) {
@@ -98,8 +102,8 @@ dim(sc_samples)
 
 # -----------------------------------------------------------------
 # Load post-QC bulk RNA-seq data
-log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
-bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
+log2tpm <- readRDS("../data/filtered_log2tpm_lowinput_phase_1.rds")
+bulk_meta <- readRDS("../data/filtered_meta_lowinput_phase_1.rds")
 all(colnames(log2tpm) == bulk_meta$Sample.ID)
 
 file_mean_sd <- "data/celseq_synovium_log2tpm_mean_sd.rds"
@@ -162,7 +166,7 @@ dim(res$scores$corr.Y.xscores)
 # res.rcc <- rcc(data_1, data_2, res.regul$lambda1, res.regul$lambda2)
 
 saveRDS(res, file = paste("allcelltypes_cca_", nrow(bulk_samples_new), "_genes", ".rds", sep = ""))
-# res <- readRDS("data/allcelltypes_cca_7465_genes.rds")
+# res <- readRDS("../data/allcelltypes_cca_7465_genes.rds")
 
 # Plot the canonical variates
 barplot(res$cor, xlab = "Dimension", ylab = "Canonical correlations", ylim = c(0,1))
@@ -229,8 +233,8 @@ tsne1 <- Rtsne(
 cc_sc$T1 <- tsne1$Y[,1]
 cc_sc$T2 <- tsne1$Y[,2]
 
-saveRDS(cc_sc, paste("all_infomap_", "cc_", nk, "nk_", per, "per", ".rds", sep = ""))
-# cc_sc <- readRDS("")
+# saveRDS(cc_sc, paste("all_infomap_", "cc_", nk, "nk_", per, "per", ".rds", sep = ""))
+
 
 # tSNE plot
 ggplot() +
@@ -420,17 +424,24 @@ write.table(lig1, file = paste("liger_", testName, ".txt", sep = ""), quote = F,
 
 # -----------------------------------------------------------------
 # Estimate the optimal number of clusters (k) using Silhouette 
+# dat_dist <- dat_dist[which(rownames(dat_dist) %in% rownames(all_fine)),which(rownames(dat_dist) %in% rownames(all_fine))]
+# all(rownames(dat_dist) == colnames(dat_dist))
+# cc_sc <- cc_sc[which(cc_sc$cell_name %in% rownames(all_fine)),]
 
-sil = silhouette(as.numeric(cc_sc$cluster), dat_dist)
-pdf('silhouette_plot_k5_newcolor.pdf')
+dat_dist <- dat_dist[ order(match(rownames(dat_dist), rownames(all_fine))), ]
+all(rownames(dat_dist) == rownames(all_fine))
+table(all_fine$clus_number)
+
+sil = silhouette(as.numeric(all_fine$clus_number), dat_dist)
+pdf('silhouette_plot_all_fine_k19_newcolor.pdf', height = 10, width = 8)
 plot(sil,
-     col = meta_colors$cluster, 
+     col = meta_colors$fine_cluster, 
      xlab = "Silhouette width",
      ylab = "Cells",
      main = "Silhouette plot of scRNA-seq clusters and \ncell-to-cell similarity matrix",
-     cex.lab = 1.5,
-     cex = 1.5,
-     cex.axis = 1.5
+     cex.lab = 1,
+     cex = 1,
+     cex.axis = 1
      )
 # abline(v = 0.22, lty = 2)
 dev.off()
