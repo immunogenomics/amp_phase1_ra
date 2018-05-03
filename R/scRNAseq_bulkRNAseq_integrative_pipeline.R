@@ -387,7 +387,7 @@ saveRDS(gene_res_best, file = paste("cluster_markers_top200", "_cc_",  nk, "knn_
 # 8) Gene enrichment for distinct clusters using liger based on MSIGDB
 
 # Load Gene sets (translate GENE NAME to ENSEMBLE ID)
-match <- read.table(file = "data/gene_ID_name_match_gencodeV24.txt.gz", header = T, stringsAsFactors = F )
+match <- read.table(file = "../data/gene_ID_name_match_gencodeV24.txt.gz", header = T, stringsAsFactors = F )
 ids <- sapply(match$GENE_ID, function(gene){
   strsplit(gene, "\\.")[[1]][1]
 })

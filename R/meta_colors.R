@@ -457,7 +457,27 @@ meta_colors <- list(
     "16" = "#AE017E",
     "17" = "#F768A1",
     "18" = "#FDE0EF", #FCC5C0
-    "19" = "#49006A"
+    "19" = "#49006A",
+    
+    "SC-F1" = "#6BAED6",
+    "SC-F2" = "#08306B", 
+    "SC-F3" = "#DEEBF7",
+    "SC-F4" = "grey",
+    "SC-T1" = "#FEB24C",
+    "SC-T2" = "#8C510A",
+    "SC-T3" = "brown",
+    "SC-T4" = "#FFFF33",
+    "SC-T5" = "#C7EAE5",
+    "SC-T6" = "#003C30",
+    "SC-T7" = "#35978F", 
+    "SC-B1" = "#FCBBA1",
+    "SC-B2" = "#CB181D", #FB6A4A #A50F15
+    "SC-B3" = "#67000D",
+    "SC-B4" = "#FB9A99",
+    "SC-M1" = "#AE017E",
+    "SC-M2" = "#F768A1",
+    "SC-M3" = "#FDE0EF", #FCC5C0
+    "SC-M4" = "#49006A"
  ),
  clus_new = c(
    "CF1" = "#6BAED6",

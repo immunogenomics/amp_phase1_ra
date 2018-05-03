@@ -359,8 +359,8 @@ write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                                 c("NR4A2", "ATF3", "PLAUR", "HBEGF", "IFITM3", "CD14", "HLA.DRA", "HLA.DPA1",
-                                   "TIMP2", "NUPR1", "ITGB5","HTRA1")),]
+                                 c("NR4A2", "ATF3", "PLAUR", "HBEGF", "IFITM3", "HLA.DRA", "HLA.DPA1",
+                                   "TIMP2", "NUPR1", "ITGB5","HTRA1", "IL1B")),]
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
@@ -378,9 +378,7 @@ dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
-dat_plot <- dat_plot[match(c("NR4A2", "ATF3", "PLAUR", "HBEGF", "IFITM3", "CD14", "HLA.DRA", "HLA.DPA1",
-                               "TIMP2", "NUPR1", "ITGB5","HTRA1"), rownames(dat_plot)),]
-rownames(dat_plot) <- dat_plot$gene
+dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep = "")
 
 # Plot genes based on logFC
 ggplot() +
@@ -414,7 +412,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("mono_DE_genes_FC_mah.pdf", width = 7, height = 4, dev = pdf)
+dev.print("mono_DE_genes_FC_mah.pdf", width = 7.7, height = 4, dev = pdf)
 dev.off()
 
 
@@ -543,22 +541,27 @@ toptable_fdr[order(toptable_fdr$logFC, decreasing = F),][1:50,]
 # 0 markers
 dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-3),])
 
-outFile = "bcell_diff_inflamedRA_OA_lym_25.txt"
+outFile = "bcell_diff_inflamedRA_OA_mah.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-# toptable_fdr <- read.table("bcell_diff_inflamedRA_OA.txt")
+
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                                 c("FCRL4", "XBP1","IGHG1", "CD38", "SDC1",
-                                   "ITGAX","CD19", "IGHM", "MS4A1",
-                                   "HLA.DRA", "CXCR5", "HLA.DPB1", "ADIRF",
-                                   "RNASE1", "MZB1", "FKBP11" # "DERL3"
+                                 c("XBP1", "XBP1","IGHG1", "CD38", "SDC1", "IL6", "IGHD", "IGHM", # "FCRL4",
+                                   "ITGAX","CD19", "IGHM", "MS4A1", # "ZEB2", "AICDA", "ACTB",
+                                   "HLA.DRA",  "HLA.DPB1", # "CXCR5", "ADIRF", "RNASE1", 
+                                   "MZB1", "FKBP11" # "DERL3"
                                  )),]
 
+
 dat_plot$gene <- rownames(dat_plot)
-dat_plot$logFC <- (-1) * dat_plot$logFC
-dat_plot$CI.L <- (-1) * dat_plot$CI.L
-dat_plot$CI.R <- (-1) * dat_plot$CI.R
+dat_plot$logFC <- dat_plot$logFC * (-1)
+dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
+dat_plot$CI.L <- dat_plot$CI.L * (-1)
+dat_plot$CI.R <- dat_plot$CI.R * (-1)
+dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
+dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
+
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
@@ -574,11 +577,11 @@ dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep =
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                mapping=aes(x=reorder(gene, -FC), ymin=CI.L_FC, ymax=CI.R_FC), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             aes(x=reorder(gene,- logFC), y= FC, color = up_down),
              size = 3
   ) +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
@@ -590,7 +593,7 @@ ggplot() +
   # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   # coord_flip() +
   labs(x = NULL, 
-       y = "Log2 (FC)"
+       y = "Fold change"
   ) +
   theme_bw(base_size = 26) +
   theme(    
@@ -601,7 +604,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 24)
     # axis.text.y = element_text()
   )
-dev.print("bcell_DE_genes_log2FC.pdf", width = 8.5, height = 4, dev = pdf)
+dev.print("bcell_DE_genes_FC.pdf", width = 8.5, height = 4, dev = pdf)
 dev.off()
 
 
