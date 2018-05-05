@@ -11,6 +11,7 @@ source("meta_colors.R")
 library(gdata) 
 library(ggplot2)
 
+
 # Read post-QC single-cell RNA-seq meta data
 meta <- readRDS("../data/celseq_synovium_meta_5452cells_paper.rds")
 meta <- meta[order(meta$cell_name),]
@@ -50,7 +51,7 @@ type[grep("M-", plot_final$fine_cluster)] <- "Monocyte"
 plot_final$type <- type
 
 plot_final$lym_25_order = factor(plot_final$lym_25, levels=c('OA','non-inflamed RA','inflamed RA'))
-plot_final$type_order = factor(plot_final$type, levels=c('Fibroblast','T cell','B cell', 'Monocyte'))
+plot_final$type_order = factor(plot_final$type, levels=c('Fibroblast','Monocyte', 'T cell','B cell'))
 
 # saveRDS(plot_final, "barplot_sc_cluster_per_patient.rds")
 # plot_final <- readRDS("../data/barplot_sc_cluster_per_patient.rds")
@@ -79,7 +80,107 @@ ggplot(
         axis.text = element_text(size = 25),
         axis.text.x=element_text(angle=30, hjust=1),
         axis.text.y = element_text(size = 30))
-ggsave(file = paste("barplot_sc_cluster_per_patient_lym_25_goodcells", ".pdf", sep = ""),
+ggsave(file = paste("barplot_sc_cluster_per_patient_goodcells", ".pdf", sep = ""),
        width = 14, height = 11, dpi = 300)
 dev.off()
+
+# -------
+load("../data/synData.Fibro.downsample.SNE.RData")
+load("../data/synData.Bcell.downsample.SNE.RData")
+load("../data/synData.Mono.downsample.SNE.RData")
+load("../data/synData.Tcell.downsample.SNE.RData")
+
+# Plot # cells from clusters per patient for mass cytometry
+fibro_plot <- table(synData.Fibro.downsample$markers, synData.Fibro.downsample$sampleID)
+fibro_plot <- as.data.frame(fibro_plot)
+colnames(fibro_plot) <- c("cluster","donor", "cells")
+fibro_plot$cell_type <- rep("Fibroblast", nrow(fibro_plot))
+fibro_plot$cluster <- as.character(fibro_plot$cluster)
+# fibro_plot$cluster[which(fibro_plot$cluster == "CD90– CD34– HLA-DR+")] <- "CD90- CD34- HLA-DR+"
+# fibro_plot$cluster[which(fibro_plot$cluster == "CD90+ CD34– HLA-DR-")] <- "CD90+ CD34- HLA-DR-"
+
+mono_plot <- table(synData.Mono.downsample$markers, synData.Mono.downsample$sampleID)
+mono_plot <- as.data.frame(mono_plot)
+colnames(mono_plot) <- c("cluster","donor", "cells")
+mono_plot$cell_type <- rep("Monocyte", nrow(mono_plot))
+mono_plot$cluster <- as.character(mono_plot$cluster)
+mono_plot$cluster[which(mono_plot$cluster == "CD11c+ CD38+ CCR2-")] <- "CD11c+ CD38+"
+mono_plot$cluster[which(mono_plot$cluster == "CD11c+ CD38- CCR2- CD64+")] <- "CD11c+ CD38- CD64+"
+mono_plot$cluster[which(mono_plot$cluster == "CD11c+ CD38- CCR2-")] <- "CD11c+ CD38-"
+
+
+tcell_plot <- table(synData.Tcell.downsample$markers, synData.Tcell.downsample$sampleID)
+tcell_plot <- as.data.frame(tcell_plot)
+colnames(tcell_plot) <- c("cluster","donor", "cells")
+tcell_plot$cell_type <- rep("T cell", nrow(tcell_plot))
+
+# synData.Bcell.downsample$merge <- synData.Bcell.downsample$SNE.cluster 
+# synData.Bcell.downsample$merge <- as.character(synData.Bcell.downsample$merge)
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("6", "8")] <- "mean_6_8"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("1", "3")] <- "mean_1_3"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("10", "12")] <- "mean_10_12"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("16", "17")] <- "mean_16_17"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("14", "15")] <- "mean_14_15"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("4", "9", "7", "13")] <- "mean_4_9_7_13"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "2"] <- "CM-B2"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "5"] <- "CM-B5"
+# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "11"] <- "CM-B11"
+# synData.Bcell.downsample <- merge(synData.Bcell.downsample, bcell_merg, by = "merge")
+bcell_plot <- table(synData.Bcell.downsample$markers, synData.Bcell.downsample$sampleID)
+bcell_plot <- as.data.frame(bcell_plot)
+colnames(bcell_plot) <- c("cluster","donor", "cells")
+bcell_plot$cell_type <- rep("B cell", nrow(bcell_plot))
+
+cytof_plot <- rbind.data.frame(fibro_plot, mono_plot, tcell_plot, bcell_plot)
+cytof_plot$donor <- as.character(cytof_plot$donor)
+cytof_plot$donor[which(cytof_plot$donor == "300-0486C")] <- "300-0486"
+cytof_plot$donor[which(cytof_plot$donor == "300-0511A")] <- "300-0511"
+
+# Add disease type
+inflam_label <- read.xls("../data/postQC_all_samples.xlsx")
+inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "inflamed RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "non-inflamed RA"
+table(inflam_label$Mahalanobis_20)
+inflam_label <- inflam_label[which(inflam_label$Patient %in% cytof_plot$donor), ]
+inflam_label <- inflam_label[, c("Patient", "Disease", "Tissue.type", "Mahalanobis_20")]
+colnames(inflam_label)[1] <- "donor"
+cytof_plot <- merge(cytof_plot, inflam_label, by = "donor")
+
+cytof_plot$Mahalanobis_20 = factor(cytof_plot$Mahalanobis_20, levels=c('OA','non-inflamed RA','inflamed RA'))
+cytof_plot$cell_type = factor(cytof_plot$cell_type, levels=c('Fibroblast', 'Monocyte', 'T cell', 'B cell'))
+
+dm <- cytof_plot[,c("donor", "cluster", "cells")]
+dm <- acast(dm, cluster~donor, value.var="cells")
+dm[is.na(dm)] <- 0
+hc <- hclust(dist(t(dm)))
+cytof_plot$donor <- factor(cytof_plot$donor, levels = reorder(hc$labels, cytof_plot$donor))
+
+ggplot(
+  data=cytof_plot,
+  aes(x=donor, y= cells, fill = cluster)
+  ) +
+  geom_bar(
+           stat="identity",
+           # position = "fill"
+           position = "stack",
+           width = 0.85
+  ) +
+  facet_grid(cell_type ~ Mahalanobis_20, scales = "free", space = "free_x") +
+  scale_fill_manual(values = meta_colors$cytof_cluster) +
+  labs(
+    x = "Donors",
+    y = "Number of cells"
+  ) +
+  theme_bw(base_size = 15) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 15),
+    axis.text.x=element_text(angle=35, hjust=1),
+    axis.text.y = element_text(size = 15))
+ggsave(file = paste("barplot_cytof_cluster_per_patient", ".pdf", sep = ""),
+       width = 15, height = 7, dpi = 300)
+dev.off()
+
 

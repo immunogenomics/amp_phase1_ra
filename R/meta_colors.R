@@ -640,5 +640,44 @@ meta_colors <- list(
     "endotype classification" = "#F4CAE4",
     "inflammatory cytokine" = "#E6F5C9",
     "S100 proteins" = "#FFF2AE"
+  ),
+ "cytof_cluster" = c(
+    "CD90- Cadherin.11-" ="#E41A1C", 
+    "CD90- Cadherin.11+" ="#377EB8",
+    "CD90- CD34- HLA-DR+" = "#4DAF4A", 
+    "CD90- CD34+ HLA-DR+" ="#984EA3", 
+    "CD90+ CD34- HLA-DR-" ="#FF7F00", 
+    "CD90+ CD34- HLA-DR+" ="#FFFF33",
+    "CD90+ CD34+ HLA-DR-" =  "#A65628", 
+    "CD90+ CD34+ HLA-DR+" ="#F781BF",
+    
+    "CD11c-" ="#E41A1C",   
+    "CD11c+ CCR2+" ="#377EB8",
+    "CD11c+ CD38-"   = "#4DAF4A",   
+    "CD11c+ CD38- CD64+" ="#984EA3", 
+    "CD11c+ CD38+" = "#FF7F00",
+    
+    "CD4- CD8-" = "#E41A1C",
+    "CD4+ CCR2+" ="#377EB8",    
+    "CD4+ HLA-DR+"     = "#4DAF4A", 
+    "CD4+ PD-1+ ICOS-"  ="#984EA3", 
+    "CD4+ PD-1+ ICOS+"  ="#FF7F00", 
+    "CD8+"           ="#FFFF33",
+    "CD8+ HLA-DR+"   =  "#A65628",    
+    "CD8+ PD-1+"      ="#F781BF",
+    "CD8+ PD-1+ HLA-DR+" ="#999999",
+    
+    "CD38+ CD20- Ig-"   = "#E41A1C", 
+    "CD38+ CD20- IgM+"     ="#377EB8",    
+    "HLA-DR- Ig-"        = "#4DAF4A", 
+    "HLA-DR+ CD20- CD11c+"  ="#984EA3", 
+    "HLA-DR+ CD20+ CD11c+" ="#FF7F00", 
+    "HLA-DR+ Ig-"="#FFFF33",
+    "IgA+ IgM- IgD-"     =  "#A65628",    
+    "IgM+ IgD-"     ="#F781BF",     
+    "IgM+ IgD+"   ="#999999"
   )
 )
+
+
+
