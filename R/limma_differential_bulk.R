@@ -27,15 +27,23 @@ inflam_label <- read.xls("../data/postQC_all_samples.xlsx")
 ggplot() +
   geom_point(
     data = inflam_label,
-    mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = lym_25),
-    # mapping = aes(Lymphocytes.Live * 100, Monocytes * 100, fill = disease_tissue),
+    # mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = Mahalanobis_20),
+    mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = disease_tissue),
     shape = 21, size = 4, stroke = 0.1
   ) +
+  # geom_text_repel(
+  #   data = inflam_label,
+  #   aes(x = Lymphocytes.Live * 100, y = Monocytes * 100, label = Patient),
+  #   size = 5, color = "black",
+  #   fontface = 'bold',
+  #   box.padding = unit(0.5, "lines"),
+  #   point.padding = unit(0.5, "lines")
+  # ) +
   scale_fill_manual(values = meta_colors$tissue_type) +
   geom_vline(xintercept = 25, linetype = "dashed") +
-  geom_hline(yintercept = 47, linetype = "dashed") +
+  geom_hline(yintercept = 57, linetype = "dashed") +
   labs(x = "Lymphocytes/Live by flow (%)",
-       y = "CD45+/Live by flow (%)"
+       y = "CD45pos.ov.Live/Live by flow (%)"
   ) +
   theme_bw(base_size = 20) +
   theme(
@@ -46,7 +54,7 @@ ggplot() +
     axis.text.x=element_text(size = 20)
     # axis.text.y = element_text()
   )
-ggsave(file = paste("postQC_samplse_mono_lym", ".pdf", sep = ""), width = 7.5, height = 5, dpi = 200)
+ggsave(file = paste("postQC_samplse_CD45pos_lym", ".pdf", sep = ""), width = 7.5, height = 5, dpi = 200)
 dev.off()
 
 # inflam_label$lym_25 <- inflam_label$Disease
@@ -281,19 +289,22 @@ d_fibro$logFC <- -1 * d_fibro$logFC
 d_fibro$FC <- 2^abs(d_fibro$logFC) * sign(d_fibro$logFC)
 d_fibro$cluster <- paste("S", d_fibro$cluster, sep="")
 
-ggplot(d_fibro, aes(FC, -log10(P.Value), label = cluster, fill = cluster)) +
-  geom_hline(yintercept = -log10(0.05), linetype = 2) +
+ggplot(
+  # d_fibro, aes(FC, -log10(P.Value), label = cluster, fill = cluster)
+  d_fibro, aes(FC, P.Value, label = cluster, fill = cluster)
+  ) +
+  geom_hline(yintercept = 0.05, linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
-  geom_rect(aes(xmin = 0.2, xmax = 3.2, ymin = 1.5, ymax = 7.2),
-            fill = "orange", alpha = 0.1) +
-  geom_rect(aes(xmin = -0.2, xmax = -3.2, ymin = 4.5, ymax = 7.2),
-            fill = "purple", alpha = 0.05) +
+  # geom_rect(aes(xmin = 0.2, xmax = 3.2, ymin = 1.5, ymax = 7.2),
+  #           fill = "orange", alpha = 0.1) +
+  # geom_rect(aes(xmin = -0.2, xmax = -3.2, ymin = 4.5, ymax = 7.2),
+  #           fill = "purple", alpha = 0.05) +
   geom_point(shape = 21, size = 4.5) +
   scale_fill_manual(values = meta_colors$fine_cluster) +
   # geom_text_repel(size = 5) +
   geom_text_repel(
     data = d_fibro,
-    aes(x = FC, y = -log10(P.Value), label = cluster),
+    aes(x = FC, y = P.Value, label = cluster),
     size = 6, color = "black",
     box.padding = unit(0.3, "lines"),
     point.padding = unit(0.3, "lines")

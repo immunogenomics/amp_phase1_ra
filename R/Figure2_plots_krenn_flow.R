@@ -65,57 +65,169 @@ dat_all$Mahalanobis_20 <- factor(dat_all$Mahalanobis_20,
 # dev.off()
 
 
-
-dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells))
+# dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells))
+dat_median <- dat_all %>% group_by(disease_tissue) %>% summarise(median = median(B.cells))
 
 ggplot(data=dat_all, 
-       mapping = aes(x=Mahalanobis_20, y=100 * B.cells, fill=Mahalanobis_20)) +
+       mapping = aes(x=Mahalanobis_20, y=100*B.cells, fill=Mahalanobis_20)
+       # mapping = aes(x=disease_tissue, y=100*B.cells, fill=disease_tissue)
+       # mapping = aes(x=Disease, y=100*B.cells, fill=Disease)
+  ) +
   geom_quasirandom(
-    shape = 21, size = 4
+    shape = 21, size = 4.5, stroke = 0.35
   ) +
   stat_summary(
     fun.y = median, fun.ymin = median, fun.ymax = median,
     geom = "crossbar", width = 0.8
   ) +
   scale_fill_manual(values = meta_colors$Case.Control) +
+  # scale_fill_manual(values = c("white", "grey60", "black")) +
+  # scale_fill_manual(values = c("white", "black")) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
-  xlab('')+ylab('% of synovial cells')+
-  theme_bw(base_size = 20) +
+  xlab('')+ylab('B cells/Live (%)')+
+  theme_bw(base_size = 25) +
   labs(title = "Synovial B cells") +
   theme(
     legend.position = "none",
     axis.ticks = element_blank(), 
     panel.grid = element_blank(),
-    axis.text = element_text(size = 20, color = "black"),
-    axis.text.x = element_text(angle=35, hjust=1, size=20),
-    axis.text.y = element_text(size = 20),
-    plot.title = element_text(color="black", size=22)) +
-  theme(legend.text=element_text(size=20)) +
-  coord_cartesian(ylim = c(0, 60)) 
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 22),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) +
+  coord_cartesian(ylim = c(0, 75)) 
 ggsave(
   file = "flow_bcells_boxplot_inflamed_noninflamed.pdf",
-  width = 4, height = 6
+  # file = "flow_bcells_boxplot_arthro_biopsy.pdf",
+  # file = "flow_bcells_boxplot_OA_RA.pdf",
+  width = 4.5, height = 6.5
 )
+
+
+t.test(dat_all$B.cells[which(dat_all$Mahalanobis_20 == "inflamed RA")],
+       dat_all$B.cells[which(dat_all$Mahalanobis_20 == "OA")],
+       alternative ="greater")
+
 
 # ---
 # Plot T cells/total live cells by flow
 # ---
-dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(T.cells))
+# dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(T.cells))
+dat_median <- dat_all %>% group_by(disease_tissue) %>% summarise(median = median(T.cells))
 
 ggplot(data=dat_all, 
-       mapping = aes(x=Mahalanobis_20, y=100*T.cells, fill=Mahalanobis_20)) +
+       mapping = aes(x=Mahalanobis_20, y=100*T.cells, fill=Mahalanobis_20)
+       # mapping = aes(x=Disease, y=100*T.cells, fill=Disease)
+       ) +
   geom_quasirandom(
-    shape = 21, size = 4
+    shape = 21, size = 4.5, stroke = 0.35
   ) +
   stat_summary(
     fun.y = median, fun.ymin = median, fun.ymax = median,
     geom = "crossbar", width = 0.8
   ) +
   scale_fill_manual(values = meta_colors$Case.Control) +
+  # scale_fill_manual(values = c("white", "grey60", "black")) +
+  # scale_fill_manual(values = c("white", "black")) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+  xlab('')+ylab('T cells/Live (%)')+
+  theme_bw(base_size = 25) +
+  labs(title = "Synovial T cells") +
+  theme(
+    legend.position = "none",
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 25),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) +
+  coord_cartesian(ylim = c(0, 75)) 
+ggsave(
+  # file = "flow_tcells_boxplot_inflamed_noninflamed.pdf",
+  file = "flow_tcells_boxplot_arthro_biopsy.pdf",
+  # file = "flow_tcells_boxplot_OA_RA.pdf",
+  width = 4.5, height = 6.5
+)
+
+
+t.test(dat_all$T.cells[which(dat_all$Mahalanobis_20 == "inflamed RA")],
+       dat_all$T.cells[which(dat_all$Mahalanobis_20 == "OA")],
+       alternative ="greater")
+
+
+# ---
+# Plot monocytes/total live cells by flow
+# ---
+# dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Monocytes))
+dat_median <- dat_all %>% group_by(disease_tissue) %>% summarise(median = median(Monocytes))
+
+ggplot(data=dat_all, 
+       mapping = aes(x=Mahalanobis_20, y=100*Monocytes, fill=Mahalanobis_20)
+       # mapping = aes(x=disease_tissue, y=100*Monocytes, fill=disease_tissue)
+       # mapping = aes(x=Disease, y=100*Monocytes, fill=Disease)
+       ) +
+  geom_quasirandom(
+    shape = 21, size = 4.5, stroke = 0.35
+  ) +
+  stat_summary(
+    fun.y = median, fun.ymin = median, fun.ymax = median,
+    geom = "crossbar", width = 0.8
+  ) +
+  scale_fill_manual(values = meta_colors$Case.Control) +
+  # scale_fill_manual(values = meta_colors$tissue_type) +
+  # scale_fill_manual(values = c("white", "grey60", "black")) +
+  # scale_fill_manual(values = c("white", "black")) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+  xlab('')+ylab('Monocytes/Live (%)')+
+  theme_bw(base_size = 25) +
+  labs(title = "Synovial monocytes") +
+  theme(
+    legend.position = "none",
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 25),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) 
+  # coord_cartesian(ylim = c(0, 60)) 
+ggsave(
+  file = "flow_mono_boxplot_inflamed_noninflamed.pdf",
+  # file = "flow_mono_boxplot_arthro_biopsy.pdf",
+  # file = "flow_monocytes_boxplot_OA_RA.pdf",
+  width = 4.5, height = 6.5
+)
+
+t.test(dat_all$Monocytes[which(dat_all$Mahalanobis_20 == "inflamed RA")],
+       dat_all$Monocytes[which(dat_all$Mahalanobis_20 == "OA")],
+       alternative ="greater")
+
+
+# ---
+# Plot lymphocytes/total live cells by flow
+# ---
+# dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Lymphocytes.Live))
+dat_median <- dat_all %>% group_by(disease_tissue) %>% summarise(median = median(Lymphocytes.Live))
+
+ggplot(data=dat_all, 
+       # mapping = aes(x=Mahalanobis_20, y=100*Lymphocytes.Live, fill=Mahalanobis_20)
+       mapping = aes(x=disease_tissue, y=100*Lymphocytes.Live, fill=disease_tissue)
+       ) +
+  geom_quasirandom(
+    shape = 21, size = 4, stroke = 0.2
+  ) +
+  stat_summary(
+    fun.y = median, fun.ymin = median, fun.ymax = median,
+    geom = "crossbar", width = 0.8
+  ) +
+  # scale_fill_manual(values = meta_colors$Case.Control) +
+  scale_fill_manual(values = meta_colors$tissue_type) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   xlab('')+ylab('% of synovial cells')+
   theme_bw(base_size = 20) +
-  labs(title = "Synovial T cells") +
+  labs(title = "Synovial lymphocytes") +
   theme(
     legend.position = "none",
     axis.ticks = element_blank(), 
@@ -124,12 +236,75 @@ ggplot(data=dat_all,
     axis.text.x = element_text(angle=35, hjust=1, size=20),
     axis.text.y = element_text(size = 20),
     plot.title = element_text(color="black", size=22)) +
-  theme(legend.text=element_text(size=20)) +
-  coord_cartesian(ylim = c(0, 60)) 
+  theme(legend.text=element_text(size=20)) 
+  # coord_cartesian(ylim = c(0, 60)) 
 ggsave(
-  file = "flow_tcells_boxplot_inflamed_noninflamed.pdf",
+  # file = "flow_lymphocyes_boxplot_inflamed_noninflamed.pdf",
+  file = "flow_lymphocyes_boxplot_arthro_biopsy.pdf",
   width = 4, height = 6
 )
+
+
+# ---
+# Plot Lymphcytes.Live vs Monocytes without using inflamed/non-inflamed color
+# ---
+ggplot(data=dat_all, 
+       mapping = aes(x=Lymphocytes.Live*100, y=Monocytes*100, fill = disease_tissue)) +
+  geom_point(
+    size = 4, shape = 21, stroke = 0.5
+  ) +
+  scale_fill_manual(values = c("white", "grey60", "black")) +
+  # scale_shape_manual(
+  #   values = c(1, 0, 15)
+  # ) +
+  xlab('Lymphocytes/Live (%)')+ylab('Monocytes/Live (%)')+
+  theme_bw(base_size = 20) +
+  labs(title = "") +
+  theme(
+    # legend.position = "none",
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 20, color = "black"),
+    axis.text.x = element_text(size=20),
+    axis.text.y = element_text(size = 20),
+    plot.title = element_text(color="black", size=22)) +
+  theme(legend.text=element_text(size=20)) 
+ggsave(
+  file = "lym_mono_arthro_bx.pdf",
+  width = 7, height = 5
+)
+
+# Plot Mahalanobis distance sqrt(20) = 4.5
+dat_all$Mahalanobis <- sqrt(dat_all$Mahalanobis)
+
+ggplot(
+  data=dat_all,
+  aes(x=Monocytes*100, y= Mahalanobis, fill = Mahalanobis_20)
+  ) +
+  geom_point(
+    size = 3.7, shape = 21, stroke = 0.5
+  ) +
+  geom_hline(yintercept = sqrt(20), linetype = "dashed") +
+  facet_grid(disease_tissue ~ ., scales = "free", space = "free_x") +
+  scale_fill_manual(values = meta_colors$Case.Control) +
+  theme_bw(base_size = 20) +
+  labs(title = "") +
+  xlab('Monocytes') +
+  theme(
+    # legend.position = "none",
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 20, color = "black"),
+    axis.text.x = element_text(size=20),
+    axis.text.y = element_text(size = 20),
+    plot.title = element_text(color="black", size=22)) +
+  theme(legend.text=element_text(size=20)) +
+  coord_cartesian(xlim = c(0, 60), ylim = c(0, 20))
+ggsave(
+  file = "maha_Monocytes.pdf",
+  width = 7, height = 6
+)
+
 
 
 # ---------------
@@ -177,7 +352,7 @@ dat_median <- dat_kren %>% group_by(Mahalanobis_20) %>% summarise(median = media
 ggplot(data=dat_kren, 
        mapping = aes(x=Mahalanobis_20, y=Krenn.Score.Inflammation, fill=Mahalanobis_20)) +
   geom_quasirandom(
-    shape = 21, size = 4
+    shape = 21, size = 4.5, stroke = 0.35
   ) +
   stat_summary(
     fun.y = median, fun.ymin = median, fun.ymax = median,
@@ -186,21 +361,21 @@ ggplot(data=dat_kren,
   scale_fill_manual(values = meta_colors$Case.Control) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   xlab('')+ylab('Krenn score')+
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 25) +
   labs(title = "Inflammatory infiltrate") +
   theme(
     legend.position = "none",
     axis.ticks = element_blank(), 
     panel.grid = element_blank(),
-    axis.text = element_text(size = 20, color = "black"),
-    axis.text.x = element_text(angle=35, hjust=1, size=20),
-    axis.text.y = element_text(size = 20),
-    plot.title = element_text(color="black", size=22)) +
-  theme(legend.text=element_text(size=20)) +
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 25),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) +
   coord_cartesian(ylim = c(0, 3.5)) 
 ggsave(
   file = "krenn_boxplot_inflamed_noninflamed.pdf",
-  width = 4, height = 6
+  width = 4.5, height = 6.5
 )
 
 # ---
@@ -211,7 +386,7 @@ dat_median <- dat_kren %>% group_by(Mahalanobis_20) %>% summarise(median = media
 ggplot(data=dat_kren, 
        mapping = aes(x=Mahalanobis_20, y=Krenn.Score.Lining, fill=Mahalanobis_20)) +
   geom_quasirandom(
-    shape = 21, size = 4
+    shape = 21, size = 4.5, stroke = 0.35
   ) +
   stat_summary(
     fun.y = median, fun.ymin = median, fun.ymax = median,
@@ -220,20 +395,20 @@ ggplot(data=dat_kren,
   scale_fill_manual(values = meta_colors$Case.Control) +
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   xlab('')+ylab('Krenn lining score')+
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 25) +
   labs(title = "Lining cell layer") +
   theme(
     legend.position = "none",
     axis.ticks = element_blank(), 
     panel.grid = element_blank(),
-    axis.text = element_text(size = 20, color = "black"),
-    axis.text.x = element_text(angle=35, hjust=1, size=20),
-    axis.text.y = element_text(size = 20),
-    plot.title = element_text(color="black", size=22)) +
-  theme(legend.text=element_text(size=20)) 
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 25),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) 
 ggsave(
   file = "lining_krenn_boxplot_inflamed_noninflamed.pdf",
-  width = 4, height = 6
+  width = 4.5, height = 6.5
 )
 
 # ggplot(data=dat_all,
@@ -284,13 +459,13 @@ ggplot(
     )
   ) +
   geom_point(
-    shape=21, size = 5, stroke = 0.7
+    shape=21, size = 4.5, stroke = 0.35
   ) +
   scale_fill_manual(values = meta_colors$Case.Control) +
   ## if we wanted the points coloured, but not separate lines there are two
   ## options---force stat_smooth() to have one group
   geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, # se = FALSE,
-               size = 3, linetype="dashed",
+               size = 1.5, linetype="dashed",
               col= "darkgrey", fill="lightgrey") +
   # geom_text(
   #   # aes(4.25,1), label = as.character(d1), parse = TRUE, size=14
