@@ -165,8 +165,8 @@ toptable_fdr <-topTable(fit,
                         confint=TRUE,
                         sort.by="p")
 
-# 58 markers
-dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-3),])
+# 
+dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
 outFile = "fibro_diff_inflamedRA_OA_mah.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
@@ -360,8 +360,9 @@ toptable_fdr <-topTable(fit, coef = "Mahalanobis_20OA",
                         confint=TRUE,
                         sort.by="p")
 toptable_fdr[order(toptable_fdr$logFC, decreasing = T),][1:30,]
-# 42 markers
-dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-3),])
+
+# 
+dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
 
 outFile = "mono_diff_inflamedRA_OA_mah.txt"
@@ -549,8 +550,8 @@ toptable_fdr <-topTable(fit, coef = "Mahalanobis_20OA",
                         sort.by="p")
 toptable_fdr[order(toptable_fdr$logFC, decreasing = F),][1:50,]
 
-# 0 markers
-dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-3),])
+# 
+dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-1),])
 
 outFile = "bcell_diff_inflamedRA_OA_mah.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
@@ -725,8 +726,8 @@ toptable_fdr <-topTable(fit, coef = "Mahalanobis_20OA",
                         confint=TRUE,
                         sort.by="p")
 
-# 3 markers
-dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-3),])
+# 
+dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
 outFile = "tcell_diff_inflamedRA_OA_mah.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
@@ -854,6 +855,10 @@ ggplot(d_tcell, aes(FC, -log10(P.Value), label = cluster, fill = cluster)) +
             fill = "orange", alpha = 0.1) +
   geom_point(shape = 21, size = 4) +
   scale_fill_manual(values = meta_colors$fine_cluster) +
+  # scale_x_continuous(
+  #   breaks = scales::pretty_breaks(3),
+  #   labels = function(x) fractional::fractional(2^x)
+  # )
   geom_text_repel(
     data = d_tcell,
     aes(x = FC, y = -log10(P.Value), label = cluster),
@@ -862,7 +867,7 @@ ggplot(d_tcell, aes(FC, -log10(P.Value), label = cluster, fill = cluster)) +
     point.padding = unit(0.3, "lines")
   ) +
   coord_cartesian(
-    xlim=c(-1, 3)
+    xlim=c(-0.2, 3)
   ) +
   theme_classic(base_size = 18) +
   theme(legend.position = "none") +
