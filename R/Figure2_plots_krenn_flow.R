@@ -279,7 +279,7 @@ dat_all$Mahalanobis <- sqrt(dat_all$Mahalanobis)
 
 ggplot(
   data=dat_all,
-  aes(x=Monocytes*100, y= Mahalanobis, fill = Mahalanobis_20)
+  aes(x=T.cells*100, y= Mahalanobis, fill = Mahalanobis_20)
   ) +
   geom_point(
     size = 3.7, shape = 21, stroke = 0.5
@@ -299,7 +299,10 @@ ggplot(
     axis.text.y = element_text(size = 20),
     plot.title = element_text(color="black", size=22)) +
   theme(legend.text=element_text(size=20)) +
-  coord_cartesian(xlim = c(0, 60), ylim = c(0, 20))
+  coord_cartesian(
+    # xlim = c(0, 70), 
+    ylim = c(0, 20)
+    )
 ggsave(
   file = "maha_Monocytes.pdf",
   width = 7, height = 6
