@@ -84,6 +84,49 @@ ggsave(file = paste("barplot_sc_cluster_per_patient_goodcells", ".pdf", sep = ""
        width = 14, height = 11, dpi = 300)
 dev.off()
 
+
+# ------
+# Plot heatmap of cell count for each cluster and each donor
+dat <- table(mat$fine_cluster, mat$sample) 
+meta_col <- meta[-which(duplicated(meta$sample)),]
+sc_inflam_label <- inflam_label[which(inflam_label$Patient %in% meta_col$sample),]
+sc_inflam_label$Patient <- as.character(sc_inflam_label$Patient)
+colnames(sc_inflam_label)[1] <- "sample"
+# all(meta_col$sample == sc_inflam_label$sample)
+meta_col <- merge(meta_col, sc_inflam_label, by = "sample")
+
+meta_row <- meta[-which(duplicated(meta$fine_cluster)),]
+annotation_col <- meta_col[, c("Mahalanobis_20", "sample")]
+colnames(annotation_col)[1] <- "Case.Control"
+annotation_row <- meta_row[, c("type", "fine_cluster")]
+rownames(annotation_col) <- as.character(meta_col$sample)
+rownames(annotation_row) <- as.character(meta_row$fine_cluster)
+
+dat <- dat[, -which(colnames(dat) %in% names(which(colSums(dat) == 0)))]
+# dat <- dat[,order(annotation_col$Case.Control)]
+# dat <- dat[c("F-2", "T-5", "B-4", "M-1", "B-1", "B-2", "B-3", "T-2","F-1", "T-6", "T-7",  "F-4", "M-2", "F-3", "M-3", "M-4", "T-1", "T-3", "T-4"),]
+
+pdf("sc_clusters_heatmap_per_donor.pdf", width=10, height=9)
+pheatmap(
+  mat = dat,
+  border_color = NA,
+  color = cet_pal(100, name = "kgy"),
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  annotation_col = annotation_col,
+  annotation_row = annotation_row,
+  annotation_colors = meta_colors,
+  cellwidth = 12,
+  cellheight = 14,
+  fontsize = 10,
+  fontsize_row = 10,
+  scale = 'none',
+  legend = TRUE
+)
+dev.off()
+
+
+
 # -------
 load("../data/synData.Fibro.downsample.SNE.RData")
 load("../data/synData.Bcell.downsample.SNE.RData")
