@@ -174,7 +174,7 @@ write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
                          c("HBEGF", "CLIC5", "HTRA1", "PRG4", "CD55", "DNASE1L3",
-                           "PTGFR", "FOS", "F3", "HLA.DRA", # "C3", 
+                          "FOS", "F3", "HLA.DRA", # "C3", "PTGFR",
                            "IL6", "HLA.DPA1", "HLA.DRB1", # "IFI30", 
                            "CADM1", # "DKK3", # "CAPG", "AKR1C2", "COL8A2",
                            "ACTA2", "CD34", # "MCAM", "MYH11"
@@ -183,11 +183,11 @@ dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in%
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
-dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
+# dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
+# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
+# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
 
 # Change HLA.DRA to HLA-DRA
@@ -195,19 +195,22 @@ dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
 dat_plot[which(dat_plot$gene == "HLA.DRB1"),]$gene <- "HLA-DRB1"
 dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 
-dat_plot$up_down <- dat_plot$FC
+dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
-dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
+
 
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -FC), ymin=CI.L_FC, ymax=CI.R_FC), 
+                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -FC), y= FC, color = up_down),
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
              size = 3.5
   ) +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
@@ -215,14 +218,14 @@ ggplot() +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
   # scale_x_discrete(position = "top") +
-  # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   # coord_flip() +
   labs(x = NULL, 
        y = "Fold change"
   ) +
-  coord_cartesian(
-    ylim=c(-10, 22)
-  ) +
+  # coord_cartesian(
+  #   ylim=c(-10, 22)
+  # ) +
   theme_bw(base_size = 35) +
   theme(    
     # axis.ticks = element_blank(), 
@@ -232,7 +235,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("fibro_DE_genes_FC.pdf", width = 10, height = 4.5, dev = pdf)
+dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
 dev.off()
 
 
@@ -278,45 +281,61 @@ toptable_fdr <- topTable(fit_2, coef = "Mahalanobis_20OA",
 # single-cell RNA-seq clusters log2(FC) and p-value
 toptable_fdr[, c("logFC", "P.Value")]
 
+# ---
 # Limma result is the same as t.test
-#bulk_m$F1 <- as.numeric(mean_F1[1,])
-#t.test(F1 ~ Mahalanobis_20, data = bulk_m) #y = bulk_m$Mahalanobis_20 == "inflamed RA", x = mean_F1[1,])
+bulk_m$F4 <- as.numeric(mean_F4[1,])
+t.test(F4 ~ Mahalanobis_20, data = bulk_m) 
+#y = bulk_m$Mahalanobis_20 == "inflamed RA", x = mean_F1[1,])
 
+# ---
 # single-cell RNA-seq clusters log2(FC) and p-value
-d_fibro <- toptable_fdr[, c("logFC", "P.Value")]
+d_fibro <- toptable_fdr[, c("logFC", "CI.L", "CI.R", "t", "P.Value")]
 d_fibro$cluster <- rownames(d_fibro)
-d_fibro$logFC <- -1 * d_fibro$logFC
-d_fibro$FC <- 2^abs(d_fibro$logFC) * sign(d_fibro$logFC)
 d_fibro$cluster <- paste("S", d_fibro$cluster, sep="")
+d_fibro$logFC <- d_fibro$logFC * (-1)
+# d_fibro$FC <- 2^abs(d_fibro$logFC) * sign(d_fibro$logFC)
+d_fibro$CI.L <- d_fibro$CI.L * (-1)
+d_fibro$CI.R <- d_fibro$CI.R * (-1)
+# d_fibro$CI.L_FC <- (d_fibro$FC + 2^(d_fibro$CI.L - d_fibro$logFC))
+# d_fibro$CI.R_FC <- (d_fibro$FC - 2^(d_fibro$logFC - d_fibro$CI.R)) 
+
 
 ggplot(
-  # d_fibro, aes(FC, -log10(P.Value), label = cluster, fill = cluster)
-  d_fibro, aes(FC, P.Value, label = cluster, fill = cluster)
+  d_fibro, 
+  aes(logFC, -log10(P.Value), label = cluster, fill = cluster)
   ) +
-  geom_hline(yintercept = 0.05, linetype = 2) +
-  geom_vline(xintercept = 0, linetype = 2) +
-  # geom_rect(aes(xmin = 0.2, xmax = 3.2, ymin = 1.5, ymax = 7.2),
-  #           fill = "orange", alpha = 0.1) +
-  # geom_rect(aes(xmin = -0.2, xmax = -3.2, ymin = 4.5, ymax = 7.2),
-  #           fill = "purple", alpha = 0.05) +
-  geom_point(shape = 21, size = 4.5) +
+  geom_point(size = 4.5,  shape = 21) +
+  geom_errorbarh(aes(xmin=CI.L, xmax=CI.R, y = -log10(P.Value)),
+                  size=0.25, color = "black"
+  ) +
   scale_fill_manual(values = meta_colors$fine_cluster) +
-  # geom_text_repel(size = 5) +
+  geom_hline(yintercept = -log10(0.05), linetype = 2) +
+  geom_vline(xintercept = 0, linetype = 2) +
+  scale_x_continuous(labels = function(x) round(2^abs(x), 1)) +
+  # scale_x_continuous(breaks=c(-4,-2,0,2,4)) +
+  # geom_rect(aes(xmin = 0.2, xmax = 5, ymin = 1.4, ymax = 7),
+  #           fill = "orange", alpha = 0.1) +
+  # geom_rect(aes(xmin = -5, xmax = -0.2, ymin = 4.5, ymax = 7),
+  #           fill = "purple", alpha = 0.1) +
   geom_text_repel(
     data = d_fibro,
-    aes(x = FC, y = P.Value, label = cluster),
-    size = 6, color = "black",
-    box.padding = unit(0.3, "lines"),
-    point.padding = unit(0.3, "lines")
+    aes(x = logFC, y = -log10(P.Value), label = cluster),
+    size = 5, color = "black",
+    box.padding = unit(0.4, "lines"),
+    point.padding = unit(0.4, "lines")
   ) +
-  theme_classic(base_size = 18) +
-  theme(legend.position = "none") +
-  coord_cartesian(
-    xlim=c(-3, 3)
+  theme_classic(base_size = 16) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    legend.position = "nonoe",
+    panel.grid = element_blank(),
+    axis.text.y = element_text(size = 16, color = "black"),
+    axis.text.x=element_text(size = 16, color = "black")
   ) +
+  coord_cartesian(xlim = c(-2, 2)) +
   theme(legend.position = "none") +
   labs(x = ("Fold change"), y = bquote("-Log"[10]~"P"))
-ggsave(file = paste("fibro_fc_pvalue", ".pdf", sep = ""), width = 3.5, height = 3.1)
+ggsave(file = paste("fibro_fc_pvalue", ".pdf", sep = ""), width = 3.2, height = 3)
 dev.off()
 
 
@@ -376,11 +395,11 @@ dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in%
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
-dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
+# dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
+# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
+# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
 
 # Change HLA.DRA to HLA-DRA
@@ -390,16 +409,18 @@ dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
-dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
 
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -FC), ymin=CI.L_FC, ymax=CI.R_FC), 
+                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -FC), y= FC, color = up_down),
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
              size = 3.5
   ) +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
@@ -407,14 +428,14 @@ ggplot() +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
   # scale_x_discrete(position = "top") +
-  # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   # coord_flip() +
   labs(x = NULL, 
        y = "Fold change"
   ) +
-  coord_cartesian(
-    ylim=c(-10.5, 5)
-  ) +
+  # coord_cartesian(
+  #   ylim=c(-10.5, 5)
+  # ) +
   theme_bw(base_size = 28) +
   theme(    
     legend.position = "none",
@@ -424,7 +445,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("mono_DE_genes_FC_mah.pdf", width = 7.7, height = 4, dev = pdf)
+dev.print("mono_DE_genes_FC_mah.pdf", width = 7.7, height = 4.5, dev = pdf)
 dev.off()
 
 
@@ -470,38 +491,64 @@ toptable_fdr <- topTable(fit_2, coef = "Mahalanobis_20OA",
 # single-cell RNA-seq clusters log2(FC) and p-value
 toptable_fdr[, c("logFC", "P.Value")]
 
+# ---
+# Limma result is the same as t.test
+bulk_m$M2 <- as.numeric(mean_M2[1,])
+t.test(M2 ~ Mahalanobis_20, data = bulk_m, alternative = "two.sided") 
 
+
+# ---
 # single-cell RNA-seq clusters log2(FC) and p-value
-d_mono <- toptable_fdr[, c("logFC", "P.Value")]
+d_mono <- toptable_fdr[, c("logFC", "CI.L", "CI.R", "t", "P.Value")]
 d_mono$cluster <- rownames(d_mono)
-d_mono$logFC <- (-1) * d_mono$logFC
-d_mono$FC <- 2^abs(d_mono$logFC) * sign(d_mono$logFC)
 d_mono$cluster <- paste("S", d_mono$cluster, sep="")
+d_mono$logFC <- d_mono$logFC * (-1)
+# d_mono$FC <- 2^abs(d_mono$logFC) * sign(d_mono$logFC)
+d_mono$CI.L <- d_mono$CI.L * (-1)
+d_mono$CI.R <- d_mono$CI.R * (-1)
+# d_mono$CI.L_FC <- (d_mono$FC + 2^(d_mono$CI.L - d_mono$logFC))
+# d_mono$CI.R_FC <- (d_mono$FC - 2^(d_mono$logFC - d_mono$CI.R)) 
 
-ggplot(d_mono, aes(FC, -log10(P.Value), label = cluster, fill = cluster)) +
+
+ggplot(
+  d_mono, 
+  aes(logFC, -log10(P.Value), label = cluster, fill = cluster)
+  ) +
+  # geom_rect(aes(xmin = 0.1, xmax = 4, ymin = 1.4, ymax = 5.5),
+  #           fill = "orange", alpha = 0.1) +
+  # geom_rect(aes(xmin = -4, xmax = -0.1, ymin = 3.5, ymax = 5.5),
+  #           fill = "purple", alpha = 0.1) +
+  geom_point(size = 4.5,  shape = 21) +
+  geom_errorbarh(aes(xmin=CI.L, xmax=CI.R, y = -log10(P.Value)),
+                 size=0.25, color = "black"
+  ) +
+  scale_fill_manual(values = meta_colors$fine_cluster) +
   geom_hline(yintercept = -log10(0.05), linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
-  geom_rect(aes(xmin = 0.2, xmax = 3, ymin = 1.5, ymax = 5.5),
-            fill = "orange", alpha = 0.1) +
-  geom_rect(aes(xmin = -0.25, xmax = -3, ymin = 3.5, ymax = 5.5),
-            fill = "purple", alpha = 0.05) +
-  geom_point(shape = 21, size = 4.5) +
-  scale_fill_manual(values = meta_colors$fine_cluster) +
+  scale_x_continuous(labels = function(x) round(2^abs(x), 1)) +
+  # scale_x_continuous(breaks=c(-4,-2,0,2,4)) +
   geom_text_repel(
     data = d_mono,
-    aes(x = FC, y = -log10(P.Value), label = cluster),
-    size = 6, color = "black",
-    box.padding = unit(0.2, "lines"),
-    point.padding = unit(0.25, "lines")
+    aes(x = logFC, y = -log10(P.Value), label = cluster),
+    size = 5, color = "black",
+    box.padding = unit(0.7, "lines"),
+    point.padding = unit(0.5, "lines")
   ) +
-  coord_cartesian(
-    xlim=c(-3, 3)
+  theme_classic(base_size = 16) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    legend.position = "nonoe",
+    panel.grid = element_blank(),
+    axis.text.y = element_text(size = 16, color = "black"),
+    axis.text.x=element_text(size = 16, color = "black")
   ) +
-  theme_classic(base_size = 18) +
+  # coord_cartesian(xlim = c(-2,2), ylim = c(0,5)) +
+  scale_y_continuous(breaks=c(0,1,3,5)) +
   theme(legend.position = "none") +
-  labs(x = bquote("Fold change"), y = bquote("-Log"[10]~"P"))
-ggsave(file = paste("mono_fc_pvalue", ".pdf", sep = ""), width = 3.7, height = 3.2)
+  labs(x = ("Fold change"), y = bquote("-Log"[10]~"P"))
+ggsave(file = paste("mono_fc_pvalue", ".pdf", sep = ""), width = 3.3, height = 3.1)
 dev.off()
+
 
 
 # ---------------------
@@ -561,18 +608,18 @@ write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
                                  c("XBP1", "XBP1","IGHG1", "CD38", "SDC1", "IL6", "IGHD", "IGHM", # "FCRL4",
                                    "ITGAX","CD19", "IGHM", "MS4A1", # "ZEB2", "AICDA", "ACTB",
-                                   "HLA.DRA",  "HLA.DPB1", # "CXCR5", "ADIRF", "RNASE1", 
+                                   "HLA.DPB1", # "HLA.DRA", "CXCR5", "ADIRF", "RNASE1", 
                                    "MZB1", "FKBP11" # "DERL3"
                                  )),]
 
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
-dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
+# dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
+# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
+# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
 
 # Change HLA.DRA to HLA-DRA
@@ -582,19 +629,20 @@ dat_plot[which(dat_plot$gene == "HLA.DPB1"),]$gene <- "HLA-DPB1"
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
-
-dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
 
 
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -FC), ymin=CI.L_FC, ymax=CI.R_FC), 
-                width=0.3, size=0.9, color = "black"
+                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                width=0.2, size=0.7, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene,- logFC), y= FC, color = up_down),
-             size = 3
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
+             size = 3.5
   ) +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   # scale_color_manual(values = c('grey70', 'black')) +
@@ -602,22 +650,23 @@ ggplot() +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
   # scale_x_discrete(position = "top") +
-  # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   # coord_flip() +
   labs(x = NULL, 
        y = "Fold change"
   ) +
-  theme_bw(base_size = 26) +
+  theme_bw(base_size = 28) +
   theme(    
     # axis.ticks = element_blank(), 
     legend.position = "none",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 24, color = "black"),
-    axis.text.x=element_text(angle=45, hjust=1, size = 24)
+    axis.text = element_text(size = 26, color = "black"),
+    axis.text.x=element_text(angle = 45, hjust = 1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("bcell_DE_genes_FC.pdf", width = 8.5, height = 4, dev = pdf)
+dev.print("bcell_DE_genes_FC.pdf", width = 8, height = 4, dev = pdf)
 dev.off()
+
 
 
 # Take the top 20 markers for each single-cell cluster and summarize 
@@ -744,11 +793,11 @@ dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in%
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
-dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
+# dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
+# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
+# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
 
 # Change HLA.DRA to HLA-DRA
@@ -759,16 +808,19 @@ dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
-dat_plot$gene[which(dat_plot$P.Value < 1e-3)] <- paste(dat_plot$gene, "*", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
+
 
 # Plot genes based on logFC
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -FC), ymin=CI.L_FC, ymax=CI.R_FC), 
+                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -FC), y= FC, color = up_down),
+             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
              size = 3.5
   ) +
   scale_color_manual(values = c('#FF7F00', '#6A3D9A')) +
@@ -776,15 +828,12 @@ ggplot() +
   # scale_x_discrete(position = "top") +
   # scale_y_reverse() +
   # scale_x_discrete(position = "top") +
-  # scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
+  scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   # coord_flip() +
   labs(x = NULL, 
        y = "Fold change"
   ) +
-  coord_cartesian(
-    ylim=c(-2, 25)
-  ) +
-  theme_bw(base_size = 25) +
+  theme_bw(base_size = 28) +
   theme(    
     # axis.ticks = element_blank(), 
     legend.position = "nonoe",
@@ -793,7 +842,7 @@ ggplot() +
     axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("tcell_DE_genes_FC.pdf", width = 7, height = 4, dev = pdf)
+dev.print("tcell_DE_genes_FC.pdf", width = 7.5, height = 4, dev = pdf)
 dev.off()
 
 
@@ -843,35 +892,116 @@ toptable_fdr <- topTable(fit_2, coef = "Mahalanobis_20OA",
 
 # single-cell RNA-seq clusters log2(FC) and p-value
 d_tcell <- toptable_fdr[, c("logFC", "P.Value")]
-d_tcell$cluster <- rownames(d_tcell)
-d_tcell$logFC <- -1 * d_tcell$logFC
-d_tcell$FC <- 2^abs(d_tcell$logFC) * sign(d_tcell$logFC)
-d_tcell$cluster <- paste("S", d_tcell$cluster, sep="")
 
-ggplot(d_tcell, aes(FC, -log10(P.Value), label = cluster, fill = cluster)) +
+# ---
+# Limma result is the same as t.test
+bulk_m$T4 <- as.numeric(mean_T4[1,])
+t.test(T4 ~ Mahalanobis_20, data = bulk_m, alternative = "two.sided") 
+
+
+# ---
+# single-cell RNA-seq clusters log2(FC) and p-value
+d_tcell <- toptable_fdr[, c("logFC", "CI.L", "CI.R", "t", "P.Value")]
+d_tcell$cluster <- rownames(d_tcell)
+d_tcell$cluster <- paste("S", d_tcell$cluster, sep="")
+d_tcell$logFC <- d_tcell$logFC * (-1)
+# d_tcell$FC <- 2^abs(d_tcell$logFC) * sign(d_tcell$logFC)
+d_tcell$CI.L <- d_tcell$CI.L * (-1)
+d_tcell$CI.R <- d_tcell$CI.R * (-1)
+# d_tcell$CI.L_FC <- (d_tcell$FC + 2^(d_tcell$CI.L - d_tcell$logFC))
+# d_tcell$CI.R_FC <- (d_tcell$FC - 2^(d_tcell$logFC - d_tcell$CI.R)) 
+
+
+ggplot(
+  d_tcell, 
+  aes(logFC, -log10(P.Value), label = cluster, fill = cluster)
+  ) +
+  # geom_rect(aes(xmin = 0.1, xmax = 4, ymin = 1.5, ymax = 2.5),
+            # fill = "orange", alpha = 0.1) +
+  geom_point(size = 4.5,  shape = 21) +
+  geom_errorbarh(aes(xmin=CI.L, xmax=CI.R, y = -log10(P.Value)),
+                 size=0.2, color = "black"
+  ) +
+  scale_fill_manual(values = meta_colors$fine_cluster) +
   geom_hline(yintercept = -log10(0.05), linetype = 2) +
   geom_vline(xintercept = 0, linetype = 2) +
-  geom_rect(aes(xmin = 1.2, xmax = 3.2, ymin = 1.4, ymax = 2.4),
-            fill = "orange", alpha = 0.1) +
-  geom_point(shape = 21, size = 4) +
-  scale_fill_manual(values = meta_colors$fine_cluster) +
-  # scale_x_continuous(
-  #   breaks = scales::pretty_breaks(3),
-  #   labels = function(x) fractional::fractional(2^x)
-  # )
+  scale_x_continuous(labels = function(x) round(2^abs(x), 1)) +
   geom_text_repel(
     data = d_tcell,
-    aes(x = FC, y = -log10(P.Value), label = cluster),
-    size = 6, color = "black",
-    box.padding = unit(0.3, "lines"),
+    aes(x = logFC, y = -log10(P.Value), label = cluster),
+    size = 5, color = "black",
+    box.padding = unit(0.5, "lines"),
     point.padding = unit(0.3, "lines")
   ) +
-  coord_cartesian(
-    xlim=c(-0.2, 3)
+  theme_classic(base_size = 16) +
+  theme(    
+    # axis.ticks = element_blank(), 
+    legend.position = "nonoe",
+    panel.grid = element_blank(),
+    axis.text.y = element_text(size = 16, color = "black"),
+    axis.text.x=element_text(size = 16, color = "black")
   ) +
-  theme_classic(base_size = 18) +
+  coord_cartesian(ylim = c(0,2)) +
+  scale_y_continuous(breaks=c(0,1,2)) +
   theme(legend.position = "none") +
-  labs(x = bquote("Fold change"), y = bquote("-Log"[10]~"P"))
-ggsave(file = paste("tcell_fc_pvalue", ".pdf", sep = ""), width = 3.7, height = 3.2)
+  labs(x = ("Fold change"), y = bquote("-Log"[10]~"P"))
+ggsave(file = paste("tcell_fc_pvalue", ".pdf", sep = ""), width = 3.5, height = 3.5)
 dev.off()
 
+# 
+# # Mono bulk comparision for TNF, STAT1, and STAT4 ------
+# mono_color_bulk <- c(
+#   "OA" = "grey",
+#   "Biopsy-RA" = "black"
+# )
+# bulk_m$Disease.Tissue <- as.character(bulk_m$Disease.Tissue)
+# bulk_m$Disease.Tissue[which(bulk_m$Disease.Tissue == "Arthro-OA")] <- "OA"
+# bulk_m$Disease.Tissue <- factor(bulk_m$Disease.Tissue,
+#                               levels = c('OA', "Arthro-RA", "Biopsy-RA"),ordered = TRUE)
+# 
+# bulk_m$TNF <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "TNF"),])
+# bulk_m$STAT1 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "STAT1"),])
+# bulk_m$STAT4 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "STAT4"),])
+# bulk_m$HBEGF <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "HBEGF"),])
+# bulk_m$PLAUR <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "PLAUR"),])
+# bulk_m$IFI6 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "IFI6"),])
+# dat_median <- bulk_m %>% group_by(Disease.Tissue) %>% summarise(median = median(IFI6))
+# 
+# 
+# ggplot(data=bulk_m[-which(bulk_m$Disease.Tissue == "Arthro-RA"),], 
+#        mapping = aes(x=Disease.Tissue, y=IFI6, fill=Disease.Tissue)
+#        # mapping = aes(x=Mahalanobis_20, y=TNF, fill=Mahalanobis_20)
+#   ) +
+#   geom_quasirandom(
+#     shape = 21, size = 5.5, stroke = 0.35
+#   ) +
+#   stat_summary(
+#     fun.y = median, fun.ymin = median, fun.ymax = median,
+#     geom = "crossbar", width = 0.8
+#   ) +
+#   scale_fill_manual(values = mono_color_bulk) +
+#   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+#   xlab('')+ylab('IFI6')+
+#   theme_classic(base_size = 25) +
+#   labs(title = "Bulk RNA-seq samples") +
+#   theme(
+#     legend.position = "none",
+#     axis.ticks = element_blank(), 
+#     panel.grid = element_blank(),
+#     axis.text = element_text(size = 22, color = "black"),
+#     axis.text.x = element_text(size=22),
+#     axis.text.y = element_text(size = 22),
+#     plot.title = element_text(color="black", size=22)) +
+#   theme(legend.text=element_text(size=22))
+# ggsave(
+#   file = "mono_HBEGF.pdf",
+#   width = 4.5, height = 6
+# )
+# 
+# t.test(bulk_m$TNF[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$TNF[which(bulk_m$Disease.Tissue == "OA")])
+# t.test(bulk_m$STAT1[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$STAT1[which(bulk_m$Disease.Tissue == "OA")])
+# t.test(bulk_m$STAT4[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$STAT4[which(bulk_m$Disease.Tissue == "OA")])
+# t.test(bulk_m$HBEGF[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$HBEGF[which(bulk_m$Disease.Tissue == "OA")])
+# t.test(bulk_m$PLAUR[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$PLAUR[which(bulk_m$Disease.Tissue == "OA")])
+# 
+# 
