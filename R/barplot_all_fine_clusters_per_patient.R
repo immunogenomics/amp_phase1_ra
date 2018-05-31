@@ -103,8 +103,6 @@ rownames(annotation_col) <- as.character(meta_col$sample)
 rownames(annotation_row) <- as.character(meta_row$fine_cluster)
 
 dat <- dat[, -which(colnames(dat) %in% names(which(colSums(dat) == 0)))]
-# dat <- dat[,order(annotation_col$Case.Control)]
-# dat <- dat[c("F-2", "T-5", "B-4", "M-1", "B-1", "B-2", "B-3", "T-2","F-1", "T-6", "T-7",  "F-4", "M-2", "F-3", "M-3", "M-4", "T-1", "T-3", "T-4"),]
 
 pdf("sc_clusters_heatmap_per_donor.pdf", width=10, height=9)
 pheatmap(
@@ -128,6 +126,7 @@ dev.off()
 
 
 # -------
+# Plot identified mass cytometry clusters
 load("../data/synData.Fibro.downsample.SNE.RData")
 load("../data/synData.Bcell.downsample.SNE.RData")
 load("../data/synData.Mono.downsample.SNE.RData")
@@ -157,18 +156,6 @@ tcell_plot <- as.data.frame(tcell_plot)
 colnames(tcell_plot) <- c("cluster","donor", "cells")
 tcell_plot$cell_type <- rep("T cell", nrow(tcell_plot))
 
-# synData.Bcell.downsample$merge <- synData.Bcell.downsample$SNE.cluster 
-# synData.Bcell.downsample$merge <- as.character(synData.Bcell.downsample$merge)
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("6", "8")] <- "mean_6_8"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("1", "3")] <- "mean_1_3"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("10", "12")] <- "mean_10_12"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("16", "17")] <- "mean_16_17"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("14", "15")] <- "mean_14_15"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$SNE.cluster %in% c("4", "9", "7", "13")] <- "mean_4_9_7_13"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "2"] <- "CM-B2"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "5"] <- "CM-B5"
-# synData.Bcell.downsample$merge[synData.Bcell.downsample$merge == "11"] <- "CM-B11"
-# synData.Bcell.downsample <- merge(synData.Bcell.downsample, bcell_merg, by = "merge")
 bcell_plot <- table(synData.Bcell.downsample$markers, synData.Bcell.downsample$sampleID)
 bcell_plot <- as.data.frame(bcell_plot)
 colnames(bcell_plot) <- c("cluster","donor", "cells")

@@ -41,30 +41,6 @@ dat_all$Mahalanobis_20 <- factor(dat_all$Mahalanobis_20,
 # Plot B cells/total live cells by flow
 # ---
 
-# Boxplot
-# ggplot(data=dat_all, 
-#        aes(x=Case.Control, y=B.cells, fill=Case.Control)) +
-#   geom_boxplot(outlier.colour = NA) +
-#   scale_fill_manual(values = meta_colors$Case.Control) +
-#   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
-#   xlab('')+ylab('% of synovial cells')+
-#   theme_bw(base_size = 20) +
-#   labs(title = "Synovial B cells") +
-#   theme(
-#     # axis.text = element_blank(), 
-#     axis.ticks = element_blank(), 
-#     panel.grid = element_blank(),
-#     axis.text = element_text(size = 20, color = "black"),
-#     axis.text.x = element_text(angle=35, hjust=1, size=20),
-#     axis.text.y = element_text(size = 20),
-#     plot.title = element_text(color="black", size=20)) +
-#   theme(legend.text=element_text(size=20)) +
-#   geom_quasirandom(width = 0.25, size = 2) +
-#   coord_cartesian(ylim = c(0, 60)) 
-# ggsave(file = paste("flow_bcells_boxplot_active_inactive", ".pdf", sep = ""), width = 13.5, height = 12, dpi = 600)
-# dev.off()
-
-
 # dat_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells))
 dat_median <- dat_all %>% group_by(disease_tissue) %>% summarise(median = median(B.cells))
 
@@ -349,7 +325,6 @@ t.test(dat_kren$Krenn.Score.Inflammation[which(dat_kren$Mahalanobis_20 == "infla
 # ---
 # Plot Krenn inflammatory score
 # ---
-
 dat_median <- dat_kren %>% group_by(Mahalanobis_20) %>% summarise(median = median(Krenn.Score.Inflammation))
 
 ggplot(data=dat_kren, 
@@ -414,26 +389,6 @@ ggsave(
   width = 4.5, height = 6.5
 )
 
-# ggplot(data=dat_all,
-#        aes(x=Case.Control, y=Krenn.Score.Lining, fill=Case.Control)) +
-#   geom_boxplot(outlier.colour = NA) +
-#   scale_fill_manual(values = meta_colors$Case.Control) +
-#   xlab('')+ylab('Krenn lining score')+
-#   theme_bw(base_size = 20) +
-#   labs(title = "Lining cell layer") +
-#   theme(
-#     legend.position = "none",
-#     axis.ticks = element_blank(),
-#     panel.grid = element_blank(),
-#     axis.text = element_text(size = 20,  color = "black"),
-#     axis.text.x = element_text(angle=35, hjust=1, size=20),
-#     axis.text.y = element_text(size = 20),
-#     plot.title = element_text(color="black", size=22)) +
-#   theme(legend.text=element_text(size=20)) +
-#   geom_jitter(width = 0.23, size = 4)
-# ggsave(file = paste("lining_krenn_boxplot_inflamed_noninflamed_v2", ".pdf", sep = ""), 
-#        width = 4, height = 6)
-# dev.off()
 
 # ---
 # Krenn score vs lymphocyte plot

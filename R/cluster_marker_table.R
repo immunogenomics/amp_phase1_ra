@@ -11,8 +11,6 @@ auroc <- function(score, cls) {
   return(1 - U / n1 / n2)
 }
 
-# cca <- readRDS("data/allcelltypes_cca_7465_genes.rds")
-
 log2cpm <- readRDS("data/celseq_synovium_log2_5452cells_paper.rds")
 
 meta <- readRDS("data/celseq_synovium_meta_5452cells_paper.rds")

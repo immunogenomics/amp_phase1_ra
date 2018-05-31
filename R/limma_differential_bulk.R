@@ -189,7 +189,7 @@ dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
 dev.off()
 
 
-# Take the top 20 markers for each single-cell cluster and summarize 
+# Take the top markers for each single-cell cluster and summarize 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
 dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
 dat_table <- dat_table[which(dat_table$cluster %in% c("C-F1", "C-F2", "C-F3", "C-F4")),]
@@ -200,7 +200,7 @@ genes_rp <- grep(pattern = "^RP[SL]", x = dat_table$gene, value = TRUE)
 dat_table <- dat_table[-which(dat_table$gene %in% c(mito.genes_1, mito.genes_2, genes_rp)), ]
 
 x <- dat_table %>%
-  group_by(cluster) %>% top_n(auc, n=20) %>% filter(auc > 0.7)
+  group_by(cluster) %>% top_n(auc, n=100) %>% filter(auc > 0.7)
 x$cluster <- factor(x$cluster)
 table(x$cluster)
 sc_markers <- as.character(unique(x$gene))
@@ -399,7 +399,7 @@ dev.print("mono_DE_genes_FC_mah.pdf", width = 7.7, height = 4.5, dev = pdf)
 dev.off()
 
 
-# Take the top 20 markers for each single-cell cluster and summarize 
+# Take the top markers for each single-cell cluster and summarize 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
 dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
 dat_table <- dat_table[which(dat_table$cluster %in% c("C-M1", "C-M2", "C-M3", "C-M4")),]
@@ -619,7 +619,7 @@ dev.off()
 
 
 
-# Take the top 20 markers for each single-cell cluster and summarize 
+# Take the top markers for each single-cell cluster and summarize 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
 dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
 dat_table <- dat_table[which(dat_table$cluster %in% c("C-B1", "C-B2", "C-B3", "C-B4")),]
@@ -630,7 +630,7 @@ genes_rp <- grep(pattern = "^RP[SL]", x = dat_table$gene, value = TRUE)
 dat_table <- dat_table[-which(dat_table$gene %in% c(mito.genes_1, mito.genes_2, genes_rp)), ]
 
 x <- dat_table %>%
-  group_by(cluster) %>% top_n(auc, n=200) %>% filter(auc > 0.75)
+  group_by(cluster) %>% top_n(auc, n=100) %>% filter(auc > 0.7)
 x$cluster <- factor(x$cluster)
 table(x$cluster)
 sc_markers <- as.character(unique(x$gene))
@@ -797,7 +797,7 @@ dev.off()
 
 
 
-# Take the top 20 markers for each single-cell cluster and summarize 
+# Take the top markers for each single-cell cluster and summarize 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
 dat_table <- dat_table[-which(dat_table$cell_type == "All cells"),]
 dat_table <- dat_table[which(dat_table$cluster %in% c("C-T1", "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7")),]
@@ -808,7 +808,7 @@ genes_rp <- grep(pattern = "^RP[SL]", x = dat_table$gene, value = TRUE)
 dat_table <- dat_table[-which(dat_table$gene %in% c(mito.genes_1, mito.genes_2, genes_rp)), ]
 
 x <- dat_table %>%
-  group_by(cluster) %>% top_n(auc, n=100) %>% filter(auc > 0.75)
+  group_by(cluster) %>% top_n(auc, n=100) %>% filter(auc > 0.7)
 x$cluster <- factor(x$cluster)
 table(x$cluster)
 sc_markers <- as.character(unique(x$gene))

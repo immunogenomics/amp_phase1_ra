@@ -134,12 +134,11 @@ dev.off()
 
 
 # Report # genes that pass four criteria:
-# 1) pct_nonzero > 60%, 2) AUC > 0.7, 3) -log10(wilcox p) > 20, and 4) log2FC > 1
+# 1) pct_nonzero > 60%, 2) AUC > 0.7, and 3) log2FC > 1
 
 dat_table$wilcox_log <- -log10(dat_table$wilcox_pvalue)
-dat_table$wilcox_log[which(dat_table$wilcox_log == "Inf")] <- 300
+# dat_table$wilcox_log[which(dat_table$wilcox_log == "Inf")] <- 300
 
-# good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$wilcox_log > 20 & dat_table$log2FC > 1),]
 good_markers <- dat_table[which(dat_table$pct_nonzero > 0.6 & dat_table$auc > 0.7 & dat_table$log2FC > 1),]
 good_markers$cluster = factor(good_markers$cluster, 
                               levels=c("C-F1", "C-F2", "C-F3", "C-F4",
@@ -150,7 +149,7 @@ good_markers$cluster = factor(good_markers$cluster,
 table(good_markers$cluster)
 
 
-# Export top 10 - 20 cluster marker genes 
+# Export top 20 marker genes per cluster
 x <- dat_table %>%
   group_by(cluster) %>%
   top_n(20, wt = auc)

@@ -23,7 +23,6 @@ library(data.table)
 
 source("R/meta_colors.R")
 
-
 # dat <- readRDS(file = paste("data/celseq_synovium_log2_postQC", ".rds", sep = ""))
 # sc_meta <- readRDS(file = paste("data/celseq_synovium_meta", ".rds", sep = ""))
 # all(colnames(dat) == sc_meta$cell_name)
@@ -102,7 +101,6 @@ ggsave(file = paste("goodcells_per_cluster", ".pdf", sep = ""), width = 13, heig
 dev.off()
 
 
-
 sc_meta$good <- rep(1, nrow(sc_meta))
 sc_meta$good[which(sc_meta$gd < 1000 | sc_meta$percent_mt_molecules > 0.25)] <- 0
 sum_bad <- table(sc_meta$fine_cluster, sc_meta$good)[,1]
@@ -114,19 +112,8 @@ clus_good <- data.frame(
   per_bad = per
 )
 
+
 # ---------------------------------
-# Save paper used data
-good_meta <- sc_meta[which(sc_meta$good == 1),]
-good_meta <- good_meta[,-37]
-saveRDS(good_meta, "celseq_synovium_meta_5452cells_paper.rds")
-
-dat <- dat[,which(colnames(dat) %in% good_meta$cell_name)]
-dim(dat)
-all(colnames(dat) == good_meta$cell_name)
-saveRDS(dat, "celseq_synovium_log2_5452cells_paper.rds")
-# ---------------------------------
-
-
 dat_percent <- sc_meta %>%
   group_by(fine_cluster) %>%
   summarise(sum_good = sum(good == 0),
