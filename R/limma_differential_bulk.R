@@ -21,56 +21,6 @@ clin_meta <- readRDS("../data//filtered_meta_lowinput_phase_1.rds")
 # Read lym_25 labels for OA, non-inflamed RA, and RA
 inflam_label <- read.xls("../data/postQC_all_samples.xlsx")
 
-# # -----------------
-# # Plot Figure S1
-
-ggplot() +
-  geom_point(
-    data = inflam_label,
-    # mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = Mahalanobis_20),
-    mapping = aes(Lymphocytes.Live * 100, CD45pos.ov.Live, fill = disease_tissue),
-    shape = 21, size = 4, stroke = 0.1
-  ) +
-  # geom_text_repel(
-  #   data = inflam_label,
-  #   aes(x = Lymphocytes.Live * 100, y = Monocytes * 100, label = Patient),
-  #   size = 5, color = "black",
-  #   fontface = 'bold',
-  #   box.padding = unit(0.5, "lines"),
-  #   point.padding = unit(0.5, "lines")
-  # ) +
-  scale_fill_manual(values = meta_colors$tissue_type) +
-  geom_vline(xintercept = 25, linetype = "dashed") +
-  geom_hline(yintercept = 57, linetype = "dashed") +
-  labs(x = "Lymphocytes/Live by flow (%)",
-       y = "CD45pos.ov.Live/Live by flow (%)"
-  ) +
-  theme_bw(base_size = 20) +
-  theme(
-    # axis.ticks = element_blank(),
-    # legend.position = "none",
-    panel.grid = element_blank(),
-    axis.text = element_text(size = 20, color = "black"),
-    axis.text.x=element_text(size = 20)
-    # axis.text.y = element_text()
-  )
-ggsave(file = paste("postQC_samplse_CD45pos_lym", ".pdf", sep = ""), width = 7.5, height = 5, dpi = 200)
-dev.off()
-
-# inflam_label$lym_25 <- inflam_label$Disease
-# inflam_label$lym_25 <- as.character(inflam_label$lym_25)
-# inflam_label$lym_25[which(inflam_label$Lymphocytes.Live > 0.25 &
-#                            inflam_label$Disease != "OA")] <- "inflamed RA"
-# inflam_label$lym_25[which(inflam_label$lym_25 == "RA")] <- "non-inflamed RA"
-# table(inflam_label$lym_25)
-# 
-# inflam_label <- inflam_label[order(inflam_label$disease_tissue),]
-# 
-# write.table(inflam_label, file = "postQC_all_samples.txt",
-#              row.names=T,col.names=T, quote = F, sep = "\t")
-# 
-
-
 # -----------------
 
 inflam_label <- inflam_label[, c("Patient", "Mahalanobis_20")]
@@ -948,60 +898,5 @@ ggplot(
 ggsave(file = paste("tcell_fc_pvalue", ".pdf", sep = ""), width = 3.5, height = 3.5)
 dev.off()
 
-# 
-# # Mono bulk comparision for TNF, STAT1, and STAT4 ------
-# mono_color_bulk <- c(
-#   "OA" = "grey",
-#   "Biopsy-RA" = "black"
-# )
-# bulk_m$Disease.Tissue <- as.character(bulk_m$Disease.Tissue)
-# bulk_m$Disease.Tissue[which(bulk_m$Disease.Tissue == "Arthro-OA")] <- "OA"
-# bulk_m$Disease.Tissue <- factor(bulk_m$Disease.Tissue,
-#                               levels = c('OA', "Arthro-RA", "Biopsy-RA"),ordered = TRUE)
-# 
-# bulk_m$TNF <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "TNF"),])
-# bulk_m$STAT1 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "STAT1"),])
-# bulk_m$STAT4 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "STAT4"),])
-# bulk_m$HBEGF <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "HBEGF"),])
-# bulk_m$PLAUR <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "PLAUR"),])
-# bulk_m$IFI6 <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "IFI6"),])
-# dat_median <- bulk_m %>% group_by(Disease.Tissue) %>% summarise(median = median(IFI6))
-# 
-# 
-# ggplot(data=bulk_m[-which(bulk_m$Disease.Tissue == "Arthro-RA"),], 
-#        mapping = aes(x=Disease.Tissue, y=IFI6, fill=Disease.Tissue)
-#        # mapping = aes(x=Mahalanobis_20, y=TNF, fill=Mahalanobis_20)
-#   ) +
-#   geom_quasirandom(
-#     shape = 21, size = 5.5, stroke = 0.35
-#   ) +
-#   stat_summary(
-#     fun.y = median, fun.ymin = median, fun.ymax = median,
-#     geom = "crossbar", width = 0.8
-#   ) +
-#   scale_fill_manual(values = mono_color_bulk) +
-#   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
-#   xlab('')+ylab('IFI6')+
-#   theme_classic(base_size = 25) +
-#   labs(title = "Bulk RNA-seq samples") +
-#   theme(
-#     legend.position = "none",
-#     axis.ticks = element_blank(), 
-#     panel.grid = element_blank(),
-#     axis.text = element_text(size = 22, color = "black"),
-#     axis.text.x = element_text(size=22),
-#     axis.text.y = element_text(size = 22),
-#     plot.title = element_text(color="black", size=22)) +
-#   theme(legend.text=element_text(size=22))
-# ggsave(
-#   file = "mono_HBEGF.pdf",
-#   width = 4.5, height = 6
-# )
-# 
-# t.test(bulk_m$TNF[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$TNF[which(bulk_m$Disease.Tissue == "OA")])
-# t.test(bulk_m$STAT1[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$STAT1[which(bulk_m$Disease.Tissue == "OA")])
-# t.test(bulk_m$STAT4[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$STAT4[which(bulk_m$Disease.Tissue == "OA")])
-# t.test(bulk_m$HBEGF[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$HBEGF[which(bulk_m$Disease.Tissue == "OA")])
-# t.test(bulk_m$PLAUR[which(bulk_m$Disease.Tissue == "Biopsy-RA")], bulk_m$PLAUR[which(bulk_m$Disease.Tissue == "OA")])
-# 
-# 
+
+

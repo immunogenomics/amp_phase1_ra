@@ -112,7 +112,7 @@ dim(bulk_samples)
 dim(cytof_samples)
 
 # -------------------------------
-# Run regularized CCA 
+# Run the regularized CCA 
 data_1 <- scale(bulk_samples)
 data_2 <- scale(cytof_samples)
 
