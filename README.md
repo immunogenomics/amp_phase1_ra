@@ -34,55 +34,55 @@ rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
 
 ## Multiple high-dimensional datasets analysis
 
-### CCA analysis of bulk and single-cell RNA-seq
+#### CCA analysis of bulk and single-cell RNA-seq
 
 We use canonical correlation analysis (CCA) to integrate bulk RNA-seq with
 single-cell RNA-seq. See this file for a detailed walk-through of the analysis:
 
     R/scRNAseq_bulkRNAseq_integrative_pipeline.R
 
-### CCA analysis of bulk and single-cell RNA-seq
+#### CCA analysis of bulk and single-cell RNA-seq
 
 We use the regularized CCA to integrate bulk RNA-seq with mass cytometry. 
 See this file for a detailed walk-through of the analysis:
 
     cytof_bulkRNAseq_integrative_pipeline.R
     
-### Identification of single-cell RNA-seq marker genes based on the cluster labels     
+###3 Identification of single-cell RNA-seq marker genes based on the cluster labels     
     
     cluster_marker_table.R
     
-### Differential analysis for bulk RNA-seq data
+#### Differential analysis for bulk RNA-seq data
 
     limma_differential_bulk.R
 
-### Optimize leukocyte threshold to classify samples based on T cells, B cells, and monocytes by flow cytometry
+#### Optimize leukocyte threshold to classify samples based on T cells, B cells, and monocytes by flow cytometry
 
     optimal_lymphocyte_threshold.R
     
-### Statistical analysis functions for PCA, densitiy analysis, etc
+###3 Statistical analysis functions for PCA, densitiy analysis, etc
 
     pure_functioins.R
     
 
 ## Visualization of results to generate figures in the manuscript
 
-### Visualization of CCA results
+#### Visualization of CCA results
 
     cca_bulk_singlecell_visualization
 
-### Plot flow gates for each disease cohort 
+#### Plot flow gates for each disease cohort 
 
     Figure2_plots_krenn_flow.R
 
-### Plot DE markers for each single-cell RNA-seq cluster basedon AUC, wilcox p, FC, percent of non-zero expressing, etc
+#### Plot DE markers for each single-cell RNA-seq cluster basedon AUC, wilcox p, FC, percent of non-zero expressing, etc
 
     plot_cluster_markers.R
     
-### Plot post-QC cells based on # genes detected vs. percent of Molecules from MT
+#### Plot post-QC cells based on # genes detected vs. percent of Molecules from MT
     
     plot_genes_detected_mitoch.R
     
-###
+
 
 
