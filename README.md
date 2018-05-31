@@ -48,7 +48,7 @@ See this file for a detailed walk-through of the analysis:
 
     cytof_bulkRNAseq_integrative_pipeline.R
     
-###3 Identification of single-cell RNA-seq marker genes based on the cluster labels     
+#### Identification of single-cell RNA-seq marker genes based on the cluster labels     
     
     cluster_marker_table.R
     
@@ -60,17 +60,21 @@ See this file for a detailed walk-through of the analysis:
 
     optimal_lymphocyte_threshold.R
     
-###3 Statistical analysis functions for PCA, densitiy analysis, etc
+#### Statistical analysis functions for PCA, densitiy analysis, etc
 
     pure_functioins.R
     
 
 ## Visualization of results to generate figures in the manuscript
 
-#### Visualization of CCA results
+#### Visualization of CCA-based framework results
 
     cca_bulk_singlecell_visualization
 
+#### Visualization of mass cytometry clustering results
+
+    cytof_results_plot.R
+    
 #### Plot flow gates for each disease cohort 
 
     Figure2_plots_krenn_flow.R
