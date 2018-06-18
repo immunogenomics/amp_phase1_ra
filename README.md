@@ -56,9 +56,10 @@ See this file for a detailed walk-through of the analysis:
 
     limma_differential_bulk.R
 
-#### Optimize leukocyte threshold to classify samples based on T cells, B cells, and monocytes by flow cytometry
+#### Optimize leukocyte threshold to classify tissue samples based on leukocyte infiltration by flow cytometry
 
     optimal_lymphocyte_threshold.R
+    inflamed.html
     
 #### Statistical analysis functions for PCA, densitiy analysis, etc
 
