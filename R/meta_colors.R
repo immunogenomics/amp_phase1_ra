@@ -191,7 +191,10 @@ meta_colors <- list(
   "Case.Control" = c(
     "OA"  = "#6A3D9A",
     "non-inflamed RA"  = "#FFD8B2",
-    "inflamed RA" = "#FF7F00" 
+    "inflamed RA" = "#FF7F00",
+    "leukocyte-poor RA"  = "#FFD8B2",
+    "leukocyte-rich RA" = "#FF7F00", 
+    "leukocyte-poor RA and OA"  = "#6A3D9A"
   ),
   "disease" = c(
     "OA arthro"  = "#6A3D9A",
@@ -661,8 +664,8 @@ meta_colors <- list(
     "CD4+ CCR2+" ="#377EB8",    
     "CD4+ HLA-DR+"     = "#4DAF4A", 
     "CD4+ PD-1+ ICOS-"  ="#984EA3", 
-    "CD4+ PD-1+ ICOS+"  ="#FF7F00", 
-    "CD8+"           ="#FFFF33",
+    "CD4+ PD-1+ ICOS+"  ="#FF7F00",  # 
+    "CD8+"           ="#FFFF33", # 
     "CD8+ HLA-DR+"   =  "#A65628",    
     "CD8+ PD-1+"      ="#F781BF",
     "CD8+ PD-1+ HLA-DR+" ="#999999",

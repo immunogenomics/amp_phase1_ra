@@ -11,6 +11,7 @@ library(liger)
 library(ggrepel)
 library(gdata) 
 library(limma)
+library(ggbeeswarm)
 
 source("pure_functions.R")
 source("meta_colors.R")
@@ -187,6 +188,60 @@ ggplot() +
   )
 dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
 dev.off()
+
+
+# ---
+# Only plot one gene
+bulk_m$gene <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "HLA.DRA"),])
+dat_median <- bulk_m %>% group_by(Mahalanobis_20) %>% summarise(median = median(gene))
+bulk_m$Mahalanobis_20 <- as.character(bulk_m$Mahalanobis_20)
+bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "inflamed RA")] <- "leukocyte-rich RA"
+bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "non-inflamed RA")] <- "leukocyte-poor RA"
+bulk_m$Mahalanobis_20 <- factor(bulk_m$Mahalanobis_20,
+                                levels = c('OA','leukocyte-poor RA', "leukocyte-rich RA"),ordered = TRUE)
+
+bulk_m <- bulk_m[-which(bulk_m$gene > 10 & bulk_m$Mahalanobis_20 == "leukocyte-poor RA"),]
+
+ggplot(data=bulk_m, 
+       mapping = aes(x=Mahalanobis_20, y=gene, fill=Mahalanobis_20)
+  ) +
+  geom_quasirandom(
+    shape = 21, size = 4.5, stroke = 0.35
+  ) +
+  stat_summary(
+    fun.y = median, fun.ymin = median, fun.ymax = median,
+    geom = "crossbar", width = 0.8
+  ) +
+  scale_fill_manual(values = meta_colors$Case.Control) +
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+  xlab('')+ylab('Gene expression')+
+  theme_bw(base_size = 25) +
+  labs(title = "HLA-DRA") +
+  theme(
+    legend.position = "none",
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 25, color = "black"),
+    axis.text.x = element_text(angle=35, hjust=1, size=25),
+    axis.text.y = element_text(size = 22),
+    plot.title = element_text(color="black", size=25)) +
+  theme(legend.text=element_text(size=25)) +
+  coord_cartesian(ylim = c(2.2, 12))
+  ggsave(
+  file = "bulk_HLA-DRA_fibro_3disease.pdf",
+  width = 4.5, height = 7
+)
+
+t.test(bulk_m$gene[which(bulk_m$Mahalanobis_20 == "leukocyte-rich RA")],
+       bulk_m$gene[which(bulk_m$Mahalanobis_20 == "leukocyte-poor RA")],
+       alternative ="greater")
+
+# ---
+
+
+
+
+
 
 
 # Take the top markers for each single-cell cluster and summarize 
