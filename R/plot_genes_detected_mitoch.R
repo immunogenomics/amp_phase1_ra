@@ -55,12 +55,12 @@ cutoff_genes <- 1000
 gd <- apply(dat, 2, function(col) sum(col > 0))
 sc_meta$gd <- gd
 
-
+sc_meta <- sc_meta[-which(sc_meta$fine_cluster == "C-T1"),]
 sc_meta$fine_cluster = factor(sc_meta$fine_cluster, 
                               levels=c("C-F1", "C-F2", "C-F3", "C-F4",
                                        "C-M1", "C-M2", "C-M3", "C-M4",
                                        "C-B1", "C-B2", "C-B3", "C-B4",
-                                       "C-T1", "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7"
+                                       "C-T2", "C-T3", "C-T4", "C-T5", "C-T6", "C-T7"
                               ))
 ggplot(
   data = sc_meta,

@@ -6,15 +6,15 @@
 #' ---
 
 
-setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/code_visualization")
+setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/R/")
 
 library(ggplot2)
 library(reshape2)
 library(dplyr)
 require(gdata)
 
-source("../R/pure_functions.R")
-source("../R/meta_colors.R")
+source("pure_functions.R")
+source("meta_colors.R")
 
 all_postQC <- readRDS("../data/all_postQC_for_barplot.rds")
 
