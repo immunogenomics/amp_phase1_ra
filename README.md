@@ -3,9 +3,9 @@
 Accelerating Medicines Partnership Phase 1 Rheumatoid Arthritis
 
 This repo has the code we used to analyze data and make figures in the
-published manuscript:
+published manuscript. The preprint version can be viewed:
 
-> Zhang et al. TITLE, JOURNAL, DOI
+> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., Kelly, S., Goodman, S.M., Tabechian, D., Hughes, L.B., Salomon-Escoto, K. and Watts, G.F., 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130.
 
 ## Overview
 
