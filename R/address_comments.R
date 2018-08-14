@@ -1,3 +1,7 @@
+# Adress reviewers' comments for AMP Phase I RA paper
+# Fan Zhang
+# 2018-08-14
+
 setwd("Documents/GitHub/amp_phase1_ra/")
 
 library(dplyr)
@@ -20,7 +24,7 @@ meta_colors$disease = c(
   "OA" = "#6A3D9A"
 )
 
-# -------
+# -------------------------
 # Load single-cell data
 log2cpm <- readRDS("../amp_phase1_ra_viewer/data/celseq_synovium_log2_5265cells_paper.rds")
 meta <- readRDS("../amp_phase1_ra_viewer/data/celseq_synovium_meta_5265cells_paper.rds")
@@ -56,7 +60,7 @@ meta <- meta[order(match(meta$cell_name, colnames(log2cpm))), ]
 all(colnames(log2cpm) == meta$cell_name)
 
 
-# -------
+# -------------------------
 # Use intersected bulk samples
 # bulk_meta <- bulk_meta[which(bulk_meta$Donor.ID %in% inter),]
 # log2tpm <- log2tpm[, which(colnames(log2tpm) %in% bulk_meta$Sample.ID)]
@@ -94,7 +98,7 @@ all(bulk_meta_fibro$Sample.ID == colnames(log2tpm_fibro))
 dim(log2tpm_fibro)
 
 
-# ------------
+# ------------------------------
 # For each cell type data
 # scRNA-seq
 log2cpm_fibro <- log2cpm[, which(meta$cell_type == "Fibroblast")]
@@ -116,7 +120,7 @@ all(colnames(log2cpm_monocyte) == meta_monocyte$cell_name)
 
 
 
-# ------------
+# ------------------------------
 # For one cluster
 subset <- "SC-F2"
 ind <- which(meta_fibro$cluster %in% subset)
@@ -165,7 +169,7 @@ gene <- "HLA.DRA"
 exp <- log2tpm_fibro[which(rownames(log2tpm_fibro) == gene),]
 bulk_meta_fibro$gene_bulk <- as.numeric(exp) 
 
-# ------
+# ---------------------------------
 # Intersect
 inter <- intersect(meta_fibro$sample, bulk_meta_fibro$Donor.ID)
 
@@ -221,7 +225,7 @@ dev.off()
 
 
 
-# ----------
+# ----------------------------
 # Bulk vs flow
 
 
@@ -298,7 +302,7 @@ pheatmap(
 )
 dev.off()
 
-# ---------
+# ---------------------------------------------
 # Update Fig 4a
 sc_genes <- c("PTGFR", "PLA2G2A", "RPS19", "FOS", "SFRP1", "C3", "F3", "GAS6", "SFRP2", "TMEM150C", "FBLN5", "ABCA6",
                "CD34", "HLA-DRA", "HLA-DPA1", "HLA-DPB1", "HLA-DRB1", "IFI30", "RSPO3", "PLAU", "RARRES3", "JAK2",
@@ -342,7 +346,7 @@ pheatmap(
 )
 dev.off()
 
-# ---------
+# ------------------------------------
 # Both sc + bulk heatmap: not good, less columns for bulk data
 bulk_genes <- c("PTGFR", "PLA2G2A", "RPS19", "FOS", "SFRP1", "C3", "F3", "GAS6", "SFRP2", "TMEM150C", "FBLN5", "ABCA6",
                "CD34", "HLA.DRA", "HLA.DPA1", "HLA.DPB1", "HLA.DRB1", "IFI30", "RSPO3", "PLAU", "RARRES3", "JAK2",
@@ -397,7 +401,7 @@ pheatmap(
 )
 dev.off()
 
-# -------
+# ----------------------------------
 # Only bulk heatmap
 # Fibro
 bulk_genes <- c("PTGFR", "PLA2G2A", "RPS19", "FOS", "SFRP1", "C3", "F3", "GAS6", "SFRP2", "TMEM150C", "FBLN5", "ABCA6",
