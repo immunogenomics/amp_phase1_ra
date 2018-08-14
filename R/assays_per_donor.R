@@ -23,7 +23,6 @@ pacman::p_load(
 
 # 2017-08-29
 # Kevin Wei says:
-#
 # 300-0134 should be deleted, did not get enough cells from this person
 
 # 2017-08-30
