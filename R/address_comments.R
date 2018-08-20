@@ -26,8 +26,8 @@ meta_colors$disease = c(
 
 # -------------------------
 # Load single-cell data
-log2cpm <- readRDS("../amp_phase1_ra_viewer/data/celseq_synovium_log2_5265cells_paper.rds")
-meta <- readRDS("../amp_phase1_ra_viewer/data/celseq_synovium_meta_5265cells_paper.rds")
+log2cpm <- readRDS("data/celseq_synovium_log2_5265cells_paper.rds")
+meta <- readRDS("data/celseq_synovium_meta_5265cells_paper.rds")
 all(colnames(log2cpm) == meta$cell_name)
 
 # Load bulk RNA-seq data
@@ -35,38 +35,47 @@ log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
 bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
 all(colnames(log2tpm) == bulk_meta$Sample.ID)
 
-# Add manhalanobis labels
-inflam_label <- read.xls("data/postQC_all_samples.xlsx")
-inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
-inflam_label$Patient <- as.character(inflam_label$Patient)
-table(inflam_label$Mahalanobis_20)
+# correct mislabeled samples
+# bulk_meta$Cell.type[which(bulk_meta$Sample.ID == "S163")] <- "B cell"
+# bulk_meta$Cell.type[which(bulk_meta$Sample.ID == "S164")] <- "T cell"
+# bulk_meta$Cell.type[which(bulk_meta$Sample.ID == "S81")] <- "Mono"
+# bulk_meta$Cell.type[which(bulk_meta$Sample.ID == "S82")] <- "Fibro"
+# saveRDS(bulk_meta, "data/filtered_meta_lowinput_phase_1.rds")
 
-inter <- intersect(intersect(meta$sample, inflam_label$Patient), bulk_meta$Donor.ID)
+# # Add manhalanobis labels
+# inflam_label <- read.xls("data/postQC_all_samples.xlsx")
+# inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+# inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+# inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+# inflam_label$Patient <- as.character(inflam_label$Patient)
+# table(inflam_label$Mahalanobis_20)
+# 
+# # inter <- intersect(intersect(meta$sample, inflam_label$Patient), bulk_meta$Donor.ID)
+# # inter <- intersect(inflam_label$Patient, bulk_meta$Donor.ID)
 # inter <- intersect(meta$sample, inflam_label$Patient)
-meta <- meta[which(meta$sample %in% inter),]
-inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
-inflam_label <- inflam_label[, c(1,42)]
-
-colnames(inflam_label)[1] <- "sample"
-meta <- merge(meta, inflam_label, by ="sample")
-dim(meta)
-table(meta$Mahalanobis_20)
-
-log2cpm <- log2cpm[, which(colnames(log2cpm) %in% meta$cell_name)]
-
-meta <- meta[order(match(meta$cell_name, colnames(log2cpm))), ]
-all(colnames(log2cpm) == meta$cell_name)
+# meta <- meta[which(meta$sample %in% inter),]
+# inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
+# inflam_label <- inflam_label[, c(1,42)]
+# 
+# colnames(inflam_label)[1] <- "sample"
+# meta <- merge(meta, inflam_label, by ="sample")
+# dim(meta)
+# table(meta$Mahalanobis_20)
+# 
+# log2cpm <- log2cpm[, which(colnames(log2cpm) %in% meta$cell_name)]
+# 
+# meta <- meta[order(match(meta$cell_name, colnames(log2cpm))), ]
+# all(colnames(log2cpm) == meta$cell_name)
 
 
 # -------------------------
 # Use intersected bulk samples
-# bulk_meta <- bulk_meta[which(bulk_meta$Donor.ID %in% inter),]
-# log2tpm <- log2tpm[, which(colnames(log2tpm) %in% bulk_meta$Sample.ID)]
-# all(colnames(log2tpm) == bulk_meta$Sample.ID)
+bulk_meta <- bulk_meta[which(bulk_meta$Donor.ID %in% inter),]
+log2tpm <- log2tpm[, which(colnames(log2tpm) %in% bulk_meta$Sample.ID)]
+all(colnames(log2tpm) == bulk_meta$Sample.ID)
 
-cell_type <- "B cell"
+
+cell_type <- "Fibro"
 log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
 bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
 all(colnames(log2tpm_fibro) == bulk_meta_fibro$Sample.ID)
@@ -82,6 +91,7 @@ dim(log2tpm_fibro)
 # inflam_label$Patient <- as.character(inflam_label$Patient)
 # table(inflam_label$Mahalanobis_20)
 # inter <- intersect(bulk_meta_fibro$Donor.ID, inflam_label$Patient)
+
 
 bulk_meta_fibro <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
 inflam_label <- inflam_label[which(inflam_label$sample %in% inter),]
@@ -108,7 +118,6 @@ all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
 log2cpm_tcell <- log2cpm[, which(meta$cell_type == "T cell")]
 meta_tcell <- meta[which(meta$cell_type == "T cell"),]
 all(colnames(log2cpm_tcell) == meta_tcell$cell_name)
-
 
 log2cpm_bcell <- log2cpm[, which(meta$cell_type == "B cell")]
 meta_bcell <- meta[which(meta$cell_type == "B cell"),]
@@ -407,7 +416,7 @@ dev.off()
 bulk_genes <- c("PTGFR", "PLA2G2A", "RPS19", "FOS", "SFRP1", "C3", "F3", "GAS6", "SFRP2", "TMEM150C", "FBLN5", "ABCA6",
                 "CD34", "HLA.DRA", "HLA.DPA1", "HLA.DPB1", "HLA.DRB1", "IFI30", "RSPO3", "PLAU", "RARRES3", "JAK2",
                 "IL6", "DKK3", "CADM1", "CAPG", "AKR1C2", "COL8A2", "ITGA11", "SFRP4", "LDLRAD4", "HBEGF", "CLIC5",
-                "C10orf105", "HTRA4", "PCSK6", "DEFB1", "ITGA6", "ERRFI1", "NTN4", "MET")
+                "C10orf105", "HTRA4", "PCSK6", "DEFB1", "ITGA6", "DNASE1L3", "ERRFI1", "NTN4", "MET")
 # Mono
 bulk_genes <- c("IL1B", "NR4A2", "ATF3", "PLAUR", "CCR2", "HBEGF", "FOSB", "RGS2", "CD83", "DUSP1",
                "HTRA1", "NUPR1", "GPNMB", "ITGB5", "LGMN",
@@ -449,14 +458,14 @@ bulk_exp <- scale_rows(bulk_exp) # Z-score
 bulk_exp[bulk_exp > 2] <- 2
 bulk_exp[bulk_exp < -2] <- -2
 
-pdf("heatmap_markers_bulk_Bcell_clusCol_clusRow.pdf", width=4, height=3, onefile = FALSE, bg = "white")
+pdf("heatmap_markers_bulk_fibro_clusCol.pdf", width=3, height=4, onefile = FALSE, bg = "white")
 pheatmap(
   mat = bulk_exp,
   border_color = NA,
   color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(8),
   show_rownames = TRUE,
   show_colnames = FALSE,
-  cluster_rows = TRUE,
+  cluster_rows = FALSE,
   cluster_cols = TRUE,
   annotation_col = annotation_col,
   annotation_colors = meta_colors,
@@ -467,4 +476,58 @@ pheatmap(
 dev.off()
 
 p$tree_col$labels
+
+# -------
+# Reviewer 1 comment 7
+samp_clu <- table(meta$sample, meta$cluster)
+samp_clu <- as.data.frame(samp_clu)
+colnames(samp_clu) <- c("sample", "cluster", "freq")
+samp_clu$sample <- as.character(samp_clu$sample)
+
+non_samples <- names(which(table(meta$sample) == 0))
+samp_clu <- samp_clu[-which(samp_clu$sample %in% non_samples),]
+table(samp_clu$sample)
+samp_clu$cluster = factor(samp_clu$cluster, levels=c("SC-F1", "SC-F2", "SC-F3", "SC-F4", "SC-M1", "SC-M2", "SC-M3", "SC-M4",
+                                                     "SC-T1", "SC-T2", "SC-T3", "SC-T4", "SC-T5", "SC-T6", "SC-B1", "SC-B2", 
+                                                     "SC-B3", "SC-B4"))
+samp_clu$sample = factor(samp_clu$sample, levels = c( "300-0122" ,"300-0153", "300-0211", "300-0213", "300-0481", "300-0482",
+                                                      "300-0483", "300-0485", "300-0486", "300-0487", "300-0511","300-0528",
+                                                      "300-0546","300-2590", "301-0122", "301-0244","301-0151","301-0153",
+                                                      "301-0155","301-0121", # lek-poor
+                                                      "301-0159", # OA, 
+                                                      "301-0161", # OA
+                                                      "301-0163", # lek-poor
+                                                      "301-0132", # OA
+                                                      "301-0250" # lek-poor
+                                                      )
+                         )
+
+ggplot(
+  data=samp_clu,
+  aes(x=cluster, y= freq, fill = sample)
+  ) +
+  geom_bar(stat="identity",
+           position = "fill",
+           # position = "stack",
+           width = 0.85
+  ) +
+  # facet_grid(cluster ~ ., scales = "free", space = "free_x") +
+  scale_fill_manual("", values = meta_colors$sample) +
+  labs(
+    x = "scRNA-seq clusters",
+    y = "Proportion of cells per donor"
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  theme_classic(base_size = 12) +
+  theme(    
+    # legend.position="none",
+    # axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 12),
+    axis.text.x=element_text(angle=30, hjust=1),
+    axis.text.y = element_text(size = 12)
+    )
+ggsave(file = paste("barplot_sc_cluster_per_patient", ".pdf", sep = ""),
+       width = 9, height = 6, dpi = 100)
+dev.off()
 
