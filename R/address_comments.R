@@ -76,7 +76,7 @@ log2tpm <- log2tpm[, which(colnames(log2tpm) %in% bulk_meta$Sample.ID)]
 all(colnames(log2tpm) == bulk_meta$Sample.ID)
 
 
-cell_type <- "Fibro"
+cell_type <- "Fibroblast"
 log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
 bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
 all(colnames(log2tpm_fibro) == bulk_meta_fibro$Sample.ID)
@@ -107,8 +107,9 @@ log2tpm_fibro <- log2tpm_fibro[, order(match(colnames(log2tpm_fibro), bulk_meta_
 all(bulk_meta_fibro$Sample.ID == colnames(log2tpm_fibro))
 dim(log2tpm_fibro)
 
-
-# # Reviewer 1 comment 1 ------------------------------------------------------------
+# ------------------------------------------------------------------------------------------------------------------------
+# Reviewer 1 comment 1 (Option 1)
+# ------------------------------------------------------------------------------------------------------------------------
 # For each cell type data
 # scRNA-seq
 # "Fibroblast", "Monocyte", "T cell", "B cell"
@@ -118,7 +119,7 @@ meta_fibro <- meta[which(meta$cell_type == type),]
 all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
 
 # For one cluster
-subset <- "SC-F4"
+subset <- "SC-F2"
 ind <- which(meta_fibro$cluster %in% subset)
 log2cpm_fibro <- log2cpm_fibro[, ind]
 meta_fibro <- meta_fibro[ind, ]
@@ -128,7 +129,7 @@ log2cpm_fibro <- log2cpm_fibro[, order(colnames(log2cpm_fibro))]
 all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
 
 # Two marker genes per cluster
-gene <- "HBEGF"
+gene <- "HLA-DRA"
 table(meta_fibro$cluster)
 exp <- log2cpm_fibro[which(rownames(log2cpm_fibro) == gene),]
 meta_fibro$gene <- as.numeric(exp)
@@ -141,7 +142,6 @@ dat_percent <- meta_fibro %>%
                    ave_median = median(gene))
 dat_percent <- as.data.frame(dat_percent)
 dat_percent <- dat_percent[order(dat_percent$sample),]
-dat_percent[1:4,]
 
 # Add number percent of cells in SC-F2 for each donor
 temp = data.frame(
@@ -157,21 +157,18 @@ dat_percent$perc_cell <- temp$perc_cell
 log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
 bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
 all(colnames(log2tpm) == bulk_meta$Sample.ID)
-bulk_meta$Cell.type[which(bulk_meta$Cell.type == "Fibro")] <- "Fibroblast"
-bulk_meta$Cell.type[which(bulk_meta$Cell.type == "Mono")] <- "Monocyte"
 
 log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == type)]
 bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == type),]
 all(colnames(log2tpm_fibro) == bulk_meta_fibro$cell_name)
 
-# gene <- "HLA.DRA"
+gene <- "HLA.DRA"
 exp <- log2tpm_fibro[which(rownames(log2tpm_fibro) == gene),]
 bulk_meta_fibro$gene_bulk <- as.numeric(exp) 
 
 # ---------------------------------
 # Intersect
 inter <- intersect(meta_fibro$sample, bulk_meta_fibro$Donor.ID)
-
 meta_1 <- dat_percent[which(dat_percent$sample %in% inter),]
 meta_2 <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
 meta_1$sample <- as.character(meta_1$sample)
@@ -195,7 +192,7 @@ meta_1$Mahalanobis <- inflam_label$Mahalanobis_20
 meta_1[1:4, ]
 scaleFUN <- function(x) sprintf("%.1f", x)
 
-p69 <- ggplot() +
+ggplot() +
   geom_point(
     data = meta_1,
     mapping = aes_string(x = "gene_bulk", y = "perc_cell", fill = "Mahalanobis"),
@@ -210,7 +207,7 @@ p69 <- ggplot() +
     title = gene
   ) +
   scale_x_continuous(labels=scaleFUN) + 
-  theme_bw(base_size = 16) +
+  theme_bw(base_size = 20) +
   theme(
     legend.position = "none",
     # axis.text = element_blank(),
@@ -224,9 +221,119 @@ p69 <- ggplot() +
 # pl <- grid.arrange(p42, p44, p45, p46, p48, p47, p51, p50, ncol = 4, nrow = 2)
 pl <- grid.arrange(p61, p62, p63, p64, p65, p67, p68, p69, ncol = 4, nrow = 2)
 ggsave(file = paste("bulk_perc_fibro", ".pdf", sep = ""), pl,
-        width = 11.5, height = 6, dpi = 300)
+        width = 12, height = 6.5, dpi = 300)
 dev.off()
 
+
+# ------------------------------------------------------------------------------------------------------------------------
+# Reviewer 1 comment 1 (Option 2) Percent of fibroblasts have >0 marker; ignore clusters
+# ------------------------------------------------------------------------------------------------------------------------
+# For each cell type data
+# scRNA-seq
+# "Fibroblast", "Monocyte", "T cell", "B cell"
+type <- "T cell"
+log2cpm_fibro <- log2cpm[, which(meta$cell_type == type)]
+meta_fibro <- meta[which(meta$cell_type == type),]
+all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
+
+# Two marker genes per cluster
+gene <- "HLA-DRB1"
+meta_fibro$gene <- as.numeric(log2cpm_fibro[which(rownames(log2cpm_fibro) == gene),])
+dat_percent <- meta_fibro %>%
+  dplyr::group_by(sample) %>%
+  dplyr::summarise(percent = sum(gene > 0) / length(gene) * 100,
+                   ave_mean = mean(gene),
+                   ave_median = median(gene))
+dat_percent <- as.data.frame(dat_percent)
+dat_percent <- dat_percent[order(dat_percent$sample),]
+
+
+# Load bulk data
+log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
+bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
+all(colnames(log2tpm) == bulk_meta$Sample.ID)
+log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == type)]
+bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == type),]
+all(colnames(log2tpm_fibro) == bulk_meta_fibro$cell_name)
+gene <- "HLA.DRB1"
+bulk_meta_fibro$gene_bulk <- as.numeric(log2tpm_fibro[which(rownames(log2tpm_fibro) == gene),]) 
+
+# Intersect
+inter <- intersect(meta_fibro$sample, bulk_meta_fibro$Donor.ID)
+meta_1 <- dat_percent[which(dat_percent$sample %in% inter),]
+meta_2 <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
+meta_1$sample <- as.character(meta_1$sample)
+meta_1 <- meta_1[ order(match(meta_1$sample, meta_2$Donor.ID)), ]
+all(meta_1$sample == meta_2$Donor.ID)
+meta_1$gene_bulk <- meta_2$gene_bulk
+
+# Add manhalonobis labels 
+inflam_label <- read.xls("data/postQC_all_samples.xlsx")
+inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+inflam_label <- inflam_label[which(inflam_label$Patient %in% meta_1$sample),]
+inflam_label$Patient <- as.character(inflam_label$Patient)
+meta_1 <- meta_1[ order(match(meta_1$sample, inflam_label$Patient)), ]
+all(meta_1$sample == inflam_label$Patient)
+meta_1$Mahalanobis <- inflam_label$Mahalanobis_20
+scaleFUN <- function(x) sprintf("%.1f", x)
+
+fit <- lm(gene_bulk ~ percent, data = meta_1)
+# summary(fit)
+# summary(fit)$adj.r.squared
+# summary(fit)$r.squared
+# summary(fit)$coefficients[2,"Pr(>|t|)"]
+fit$model$Mahalanobis <- meta_1$Mahalanobis
+p42 <- ggplot(
+  fit$model,
+  aes(
+    x=gene_bulk,
+    y=percent,
+    fill = Mahalanobis
+    )
+  ) +
+  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+              size = 1.5, linetype="dashed",
+              col= "darkgrey", fill="lightgrey") +
+  geom_point(
+    shape=21, size = 4.5, stroke = 0.35
+  ) +
+  scale_fill_manual(values = meta_colors$Case.Control) +
+  labs(
+    x = "",
+    y = "",
+    title = gene
+    # x = "Bulk RNA-seq expression",
+    # y = "Percent of non-zero expressing cells",
+    # title = paste0(gene, " in ", type)
+  ) +
+  scale_x_continuous(labels=scaleFUN) + 
+  theme_bw(base_size = 25) +
+  theme(
+    legend.position = "none",
+    # axis.text = element_blank(),
+    # axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    plot.title = element_text(color="black", size=25)
+  ) 
+
+
+pf <- grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 4, nrow = 2)
+ggsave(file = paste("bulk_perc_fibro_option2", ".pdf", sep = ""), pf,
+       width = 15.5, height = 8, dpi = 300)
+
+pm <- grid.arrange(p11, p12, p13, p14, p15, p16, p17, p18, ncol = 4, nrow = 2)
+ggsave(file = paste("bulk_perc_mono_option2", ".pdf", sep = ""), pm,
+       width = 15.5, height = 8, dpi = 300)
+
+pb <- grid.arrange(p21, p22, p23, p24, p25, p26, p27, p28, ncol = 4, nrow = 2)
+ggsave(file = paste("bulk_perc_bcell_option2", ".pdf", sep = ""), pb,
+       width = 15.5, height = 8, dpi = 300)
+
+pt <- grid.arrange(p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, ncol = 4, nrow = 3)
+ggsave(file = paste("bulk_perc_tcell_option2", ".pdf", sep = ""), pt,
+       width = 15.5, height = 12, dpi = 300)
 
 
 # ----------------------------
@@ -729,4 +836,539 @@ ggplot(
   )
 ggsave(file = paste("barplot_per_patient_flow_cytometry", ".pdf", sep = ""),
        width = 8.5, height = 6, dpi = 200)
+dev.off()
+
+
+# ----------------------------
+# Reviewer 2 comment 5.4
+# ----------------------------
+# Correlation between cytof and bulk on the measured proteomic cytof markers
+
+load("data/synData.Fibro.downsample.SNE.RData")
+load("data/synData.Bcell.downsample.SNE.RData")
+load("data/synData.Mono.downsample.SNE.RData")
+load("data/synData.Tcell.downsample.SNE.RData")
+
+# 300-0486C, 300-0511A
+synData.Fibro.downsample$sampleID[which(synData.Fibro.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Fibro.downsample$sampleID[which(synData.Fibro.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Bcell.downsample$sampleID[which(synData.Bcell.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Bcell.downsample$sampleID[which(synData.Bcell.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Mono.downsample$sampleID[which(synData.Mono.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Mono.downsample$sampleID[which(synData.Mono.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0511A")] <- "300-0511"
+
+
+# ggplot() +
+#   geom_point(
+#     data = synData.Bcell.downsample,
+#     mapping = aes_string(x = "SNE1", y = "SNE2", fill = "CD19"),
+#     shape = 21, size = 1.1, stroke = 0.011
+#   ) +
+#   scale_fill_gradientn(
+#     colours = colorRampPalette(RColorBrewer::brewer.pal(9, "Greens"))(9),
+#     name = "Normalized intensity"
+#   ) +
+#   labs(
+#     x = NULL,
+#     y = NULL
+#   ) +
+#   theme_bw(base_size = 22) +
+#   theme(
+#     legend.position = "none",
+#     axis.text = element_blank(),
+#     axis.ticks = element_blank(),
+#     panel.grid = element_blank()
+#   )
+
+# fibro
+synData.Fibro_sampleID <- synData.Fibro.downsample[, c("sampleID", "CD90")]
+synData.Fibro_mean <- synData.Fibro_sampleID %>%
+  dplyr::group_by(sampleID) %>%
+  dplyr::summarise(ave_mean = mean(CD90),
+                   ave_median = median(CD90))
+synData.Fibro_mean <- as.data.frame(synData.Fibro_mean)
+
+# B cell
+# synData.Bcell_sampleID <- synData.Bcell.downsample[, c("sampleID", "IgD")]
+synData.Bcell_sampleID <- synData.Bcell.downsample[, c("sampleID", "CD11c")]
+synData.Bcell_mean <- synData.Bcell_sampleID %>%
+  dplyr::group_by(sampleID) %>%
+  dplyr::summarise(ave_mean = mean(CD11c),
+                   ave_median = median(CD11c))
+synData.Bcell_mean <- as.data.frame(synData.Bcell_mean)
+
+# Mono
+# synData.Mono_sampleID <- synData.Mono.downsample[, c("sampleID", "CCR2")]
+synData.Mono_sampleID <- synData.Mono.downsample[, c("sampleID", "CD38")]
+synData.Mono_mean <- synData.Mono_sampleID %>%
+  dplyr::group_by(sampleID) %>%
+  dplyr::summarise(ave_mean = mean(CD38),
+                   ave_median = median(CD38))
+synData.Mono_mean <- as.data.frame(synData.Mono_mean)
+
+# T cell
+synData.Tcell_sampleID <- synData.Tcell.downsample[, c("sampleID", "CD8a")]
+synData.Tcell_mean <- synData.Tcell_sampleID %>%
+  dplyr::group_by(sampleID) %>%
+  dplyr::summarise(ave_mean = mean(CD8a),
+                   ave_median = median(CD8a))
+synData.Tcell_mean <- as.data.frame(synData.Tcell_mean)
+
+# bulk data
+# fibro
+bulk_meta$CD90_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "THY1"), ])
+cell_type <- "Fibroblast"
+log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
+bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
+all(colnames(log2tpm_fibro) == bulk_meta_fibro$Sample.ID)
+dim(bulk_meta_fibro)
+dim(log2tpm_fibro)
+
+# B cell
+bulk_meta$MS4A1 <- as.numeric(log2tpm[which(rownames(log2tpm) == "MS4A1"), ])
+bulk_meta$ITGAX <- as.numeric(log2tpm[which(rownames(log2tpm) == "ITGAX"), ])
+bulk_meta$HLA.DRA_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "HLA.DRA"), ])
+bulk_meta$CD19_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD19"), ])
+bulk_meta$IGHM_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "IGHM"), ])
+bulk_meta$IGHD_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "IGHD"), ])
+cell_type <- "B cell"
+log2tpm_bcell <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
+bulk_meta_bcell <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
+all(colnames(log2tpm_bcell) == bulk_meta_bcell$Sample.ID)
+dim(bulk_meta_bcell)
+dim(log2tpm_bcell)
+
+# Mono
+bulk_meta$CD38_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD38"), ])
+cell_type <- "Monocyte"
+log2tpm_mono <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
+bulk_meta_mono <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
+bulk_meta_mono <- bulk_meta_mono[-duplicated(bulk_meta_mono$Donor.ID),]
+log2tpm_mono <- log2tpm_mono[, which(colnames(log2tpm_mono) %in% bulk_meta_mono$Sample.ID)]
+all(colnames(log2tpm_mono) == bulk_meta_mono$Sample.ID)
+dim(bulk_meta_mono)
+dim(log2tpm_mono)
+
+# T cell
+bulk_meta$PDCD1_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "PDCD1"), ])
+bulk_meta$CD8A_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD8A"), ])
+cell_type <- "T cell"
+log2tpm_tcell <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
+bulk_meta_tcell <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
+all(colnames(log2tpm_tcell) == bulk_meta_tcell$Sample.ID)
+dim(bulk_meta_tcell)
+dim(log2tpm_tcell)
+
+# Get manhalonobis labels
+inflam_label <- read.xls("data/postQC_all_samples.xlsx")
+inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+inflam_label$Patient <- as.character(inflam_label$Patient)
+table(inflam_label$Mahalanobis_20)
+
+# Merge manhalonobis labels to bulk meta
+# Fibro
+inter <- intersect(bulk_meta_fibro$Donor.ID, inflam_label$Patient)
+bulk_meta_fibro <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
+inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
+bulk_meta_fibro <- bulk_meta_fibro[order(match(bulk_meta_fibro$Donor.ID, inflam_label$Patient)), ]
+all(bulk_meta_fibro$Donor.ID == inflam_label$Patient)
+bulk_meta_fibro$Mahalanobis_20 <- inflam_label$Mahalanobis_20
+table(bulk_meta_fibro$Mahalanobis_20)
+
+# B cell
+inter <- intersect(bulk_meta_bcell$Donor.ID, inflam_label$Patient)
+bulk_meta_bcell <- bulk_meta_bcell[which(bulk_meta_bcell$Donor.ID %in% inter),]
+inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
+bulk_meta_bcell <- bulk_meta_bcell[order(match(bulk_meta_bcell$Donor.ID, inflam_label$Patient)), ]
+all(bulk_meta_bcell$Donor.ID == inflam_label$Patient)
+bulk_meta_bcell$Mahalanobis_20 <- inflam_label$Mahalanobis_20
+table(bulk_meta_bcell$Mahalanobis_20)
+
+# Mono
+inter <- intersect(bulk_meta_mono$Donor.ID, inflam_label$Patient)
+bulk_meta_mono <- bulk_meta_mono[which(bulk_meta_mono$Donor.ID %in% inter),]
+inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
+inflam_label <-  inflam_label[order(match(inflam_label$Patient, bulk_meta_mono$Donor.ID)),]
+all(bulk_meta_mono$Donor.ID == inflam_label$Patient)
+bulk_meta_mono$Mahalanobis_20 <- inflam_label$Mahalanobis_20
+table(bulk_meta_mono$Mahalanobis_20)
+
+# T cell
+inter <- intersect(bulk_meta_tcell$Donor.ID, inflam_label$Patient)
+bulk_meta_tcell <- bulk_meta_tcell[which(bulk_meta_tcell$Donor.ID %in% inter),]
+inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
+inflam_label <-  inflam_label[order(match(inflam_label$Patient, bulk_meta_tcell$Donor.ID)),]
+all(bulk_meta_tcell$Donor.ID == inflam_label$Patient)
+bulk_meta_tcell$Mahalanobis_20 <- inflam_label$Mahalanobis_20
+table(bulk_meta_tcell$Mahalanobis_20)
+
+
+# Overlapped samples between bulk fibroblast samples with cytof fibroblast samples
+# Fibro
+over <- intersect(synData.Fibro_mean$sampleID, bulk_meta_fibro$Donor.ID)
+synData.Fibro_mean <- synData.Fibro_mean[which(synData.Fibro_mean$sampleID %in% over), ]
+bulk_meta_fibro <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% over), ]
+bulk_meta_fibro <- bulk_meta_fibro[order(match(bulk_meta_fibro$Donor.ID, synData.Fibro_mean$sampleID)), ]
+all(synData.Fibro_mean$sampleID == bulk_meta_fibro$Donor.ID)
+bulk_meta_fibro$cytof_ave_mean <- synData.Fibro_mean$ave_mean
+bulk_meta_fibro$cytof_ave_median <- synData.Fibro_mean$ave_median
+
+# B cell
+over <- intersect(synData.Bcell_mean$sampleID, bulk_meta_bcell$Donor.ID)
+synData.Bcell_mean <- synData.Bcell_mean[which(synData.Bcell_mean$sampleID %in% over), ]
+bulk_meta_bcell <- bulk_meta_bcell[which(bulk_meta_bcell$Donor.ID %in% over), ]
+bulk_meta_bcell <- bulk_meta_bcell[order(match(bulk_meta_bcell$Donor.ID, synData.Bcell_mean$sampleID)), ]
+all(synData.Bcell_mean$sampleID == bulk_meta_bcell$Donor.ID)
+bulk_meta_bcell$cytof_ave_mean <- synData.Bcell_mean$ave_mean
+bulk_meta_bcell$cytof_ave_median <- synData.Bcell_mean$ave_median
+
+# Mono
+over <- intersect(synData.Mono_mean$sampleID, bulk_meta_mono$Donor.ID)
+synData.Mono_mean <- synData.Mono_mean[which(synData.Mono_mean$sampleID %in% over), ]
+bulk_meta_mono <- bulk_meta_mono[which(bulk_meta_mono$Donor.ID %in% over), ]
+bulk_meta_mono <- bulk_meta_mono[order(match(bulk_meta_mono$Donor.ID, synData.Mono_mean$sampleID)), ]
+all(synData.Mono_mean$sampleID == bulk_meta_mono$Donor.ID)
+bulk_meta_mono$cytof_ave_mean <- synData.Mono_mean$ave_mean
+bulk_meta_mono$cytof_ave_median <- synData.Mono_mean$ave_median
+
+# T cell
+over <- intersect(synData.Tcell_mean$sampleID, bulk_meta_tcell$Donor.ID)
+synData.Tcell_mean <- synData.Tcell_mean[which(synData.Tcell_mean$sampleID %in% over), ]
+bulk_meta_tcell <- bulk_meta_tcell[which(bulk_meta_tcell$Donor.ID %in% over), ]
+bulk_meta_tcell <- bulk_meta_tcell[order(match(bulk_meta_tcell$Donor.ID, synData.Tcell_mean$sampleID)), ]
+all(synData.Tcell_mean$sampleID == bulk_meta_tcell$Donor.ID)
+bulk_meta_tcell$cytof_ave_mean <- synData.Tcell_mean$ave_mean
+bulk_meta_tcell$cytof_ave_median <- synData.Tcell_mean$ave_median
+
+
+# Fibro
+ggplot() +
+  geom_point(
+    data = bulk_meta_fibro,
+    # mapping = aes_string(x = "CD90", y = "cytof_ave_mean", fill = "Mahalanobis_20"),
+    mapping = aes_string(x = "CD34_gene", y = "cytof_ave_mean"),
+    size = 3, stroke = 0.2, shape = 20, color = "#08519C"
+  ) +
+  # scale_fill_manual(values = meta_colors$disease, name = "") +
+  labs(
+    x = "Bulk RNA-seq expression",
+    y = "Averaged mass cytometry \n proteomic expression",
+    title = "Fibroblast samples\nCD34"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_CD34", ".pdf", sep = ""),
+       width = 3, height = 3, dpi = 300)
+dev.off()
+
+# B cell
+ggplot() +
+  geom_point(
+    data = bulk_meta_bcell,
+    mapping = aes_string(x = "IGHD_gene", y = "cytof_ave_mean"),
+    size = 3, stroke = 0.2, shape = 20, color = "#E31A1C"
+  ) +
+  # scale_fill_manual(values = meta_colors$disease, name = "") +
+  labs(
+    x = "Bulk RNA-seq expression",
+    y = "Averaged mass cytometry \n proteomic expression",
+    title = "B cell samples\nIgD"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_IGH", ".pdf", sep = ""),
+       width = 3, height = 3, dpi = 300)
+dev.off()
+
+# Mono
+ggplot() +
+  geom_point(
+    data = bulk_meta_mono,
+    mapping = aes_string(x = "CCR2_gene", y = "cytof_ave_mean"),
+    size = 3, stroke = 0.2, shape = 20, color = "#DE77AE"
+  ) +
+  # scale_fill_manual(values = meta_colors$disease, name = "") +
+  labs(
+    x = "Bulk RNA-seq expression",
+    y = "Averaged mass cytometry \n proteomic expression",
+    title = "Monocyte samples\nCCR2"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_CCR2", ".pdf", sep = ""),
+       width = 3, height = 3, dpi = 300)
+dev.off()
+
+
+# T cell
+ggplot() +
+  geom_point(
+    data = bulk_meta_tcell,
+    mapping = aes_string(x = "PDCD1_gene", y = "cytof_ave_mean"),
+    size = 3, stroke = 0.2, shape = 20, color = "#A65628"
+  ) +
+  # scale_fill_manual(values = meta_colors$disease, name = "") +
+  labs(
+    x = "Bulk RNA-seq expression",
+    y = "Averaged mass cytometry \n proteomic expression",
+    title = "T cell samples\nPD1"
+  ) +
+  theme_classic(base_size = 14) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_PDCD1", ".pdf", sep = ""),
+       width = 3.2, height = 3, dpi = 300)
+dev.off()
+
+
+# Plot fitted line -------
+# Fibro
+fit <- lm(CD90_gene ~ cytof_ave_mean, data = bulk_meta_fibro)
+ggplot(
+  fit$model,
+  aes(
+    x=CD90_gene,
+    y=cytof_ave_mean
+   )
+  ) +
+  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+              size = 1.5, linetype="dashed",
+              col= "darkgrey", fill="lightgrey") +
+  geom_point(
+    shape=21, size = 2.5, stroke = 0.1, fill = "#08519C"
+  ) +
+  labs(
+    x = "",
+    y = "",
+    title = "Fibroblast samples\nCD90"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_CD90_fit", ".pdf", sep = ""),
+       width = 3, height = 3.2, dpi = 300)
+dev.off()
+
+# Mono
+fit <- lm(CD38_gene ~ cytof_ave_mean, data = bulk_meta_mono)
+ggplot(
+  fit$model,
+  aes(
+    x=CD38_gene,
+    y=cytof_ave_mean
+    )
+  ) +
+  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+              size = 1.5, linetype="dashed",
+              col= "darkgrey", fill="lightgrey") +
+  geom_point(
+    shape=21, size = 2.5, stroke = 0.1, fill = "#DE77AE"
+  ) +
+  labs(
+    x = "",
+    y = "",
+    title = "Monocyte samples\nCD38"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_CD38_fit", ".pdf", sep = ""),
+       width = 3, height = 3.2, dpi = 300)
+dev.off()
+
+
+# B cell
+fit <- lm(ITGAX ~ cytof_ave_mean, data = bulk_meta_bcell)
+ggplot(
+  fit$model,
+  aes(
+    x=ITGAX,
+    y=cytof_ave_mean
+   )
+  ) +
+  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+              size = 1.5, linetype="dashed",
+              col= "darkgrey", fill="lightgrey") +
+  geom_point(
+    shape=21, size = 2.5, stroke = 0.1, fill = "#E31A1C"
+  ) +
+  labs(
+    x = "",
+    y = "",
+    title = "B cell samples\nCD11c"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_ITGAX_fit", ".pdf", sep = ""),
+       width = 3, height = 3.2, dpi = 300)
+dev.off()
+
+
+# T cell
+fit <- lm(CD8A_gene ~ cytof_ave_mean, data = bulk_meta_tcell)
+ggplot(
+  fit$model,
+  aes(
+    x=CD8A_gene,
+    y=cytof_ave_mean
+    )
+  ) +
+  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+              size = 1.5, linetype="dashed",
+              col= "darkgrey", fill="lightgrey") +
+  geom_point(
+    shape=21, size = 2.5, stroke = 0.1, fill = "#A65628"
+  ) +
+  labs(
+    x = "",
+    y = "",
+    title = "T cell samples\nCD8"
+  ) +
+  theme_classic(base_size = 16) +
+  theme(
+    legend.position = "none"
+    # axis.text = element_blank()
+    # axis.ticks = element_blank()
+    # panel.grid = element_blank()
+  ) 
+ggsave(file = paste("cytof_bulk_per_sample_CD8A_fit", ".pdf", sep = ""),
+       width = 3, height = 3.2, dpi = 300)
+dev.off()
+
+
+# ----------------------------
+# Correlation between cytof (downsample the same number of cells per donor with scRNA-seq) and scRNA-sq 
+type <- "Fibroblast"
+log2cpm_fibro <- as.data.frame(log2cpm[, which(meta$cell_type == type)])
+meta_fibro <- meta[which(meta$cell_type == type),]
+# log2cpm_fibro <- log2cpm_fibro[,order(match(colnames(log2cpm_fibro), meta_fibro$cell_name))]
+all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
+table(meta_fibro$sample)
+meta_fibro$CD90 <- as.numeric(log2cpm_fibro[which(rownames(log2cpm_fibro) == "THY1"), ])
+
+# overlapped samples between scRNA-seq and cytof: only 7 in fibroblast 
+over <- intersect(synData.Fibro.downsample$sampleID, meta_fibro$sample)
+
+sc_fibro_over <- meta_fibro[which(meta_fibro$sample %in% over), c("sample", "Mahalanobis_20", "CD90")]
+table(sc_fibro_over$sample)
+
+cytof_fibro_over <- synData.Fibro.downsample[which(synData.Fibro.downsample$sampleID %in% over), c("CD90", "sampleID")]
+table(cytof_fibro_over$sampleID)
+
+sample(x, size, replace = FALSE, prob = NULL)
+
+
+# ----------------------------
+# Load Proteomic markers for each cell
+meta <- meta[order(meta$sample), ]
+# facs1 <- read.table(file = 'data/Phase1_facs.tsv', sep = '\t', header = TRUE)
+facs2 <- read.table(file = 'data/celseq_flow.tsv', sep = '\t', header = TRUE) 
+facs2 <- facs2[order(facs2$sample),]
+
+facs2$test <- paste(facs2$sample, "_", facs2$plate, "_", facs2$well384, sep="")
+meta$test <- paste(meta$sample, "_", substr(meta$cell_name, 1, 4), "_", substr(meta$cell_name, 11, 13), sep="")
+facs2_protein <- facs2[which(facs2$test %in% meta$test),]
+dim(facs2_protein)
+meta_protein <- meta[which(meta$test %in% facs2_protein$test),]
+meta_protein <- meta_protein[order(match(meta_protein$test, facs2_protein$test)), ]
+all(facs2_protein$test == meta_protein$test)
+meta_protein <- merge(meta_protein, facs2_protein[, c(10:27)], by = "test")
+
+log2cpm_protein <- log2cpm[,which(colnames(log2cpm) %in% meta_protein$cell_name)]
+meta_protein <- meta_protein[order(match(meta_protein$cell_name, colnames(log2cpm))),] 
+all(meta_protein$cell_name == colnames(log2cpm_protein))
+meta_protein$CD3D_gene <- log2cpm_protein[which(rownames(log2cpm_protein) == "CD3D"),]
+# Use meta_protein and log2cpm_protein to compare mRNA and protein expression
+# meta_protein$CD3_log <- log10(meta_protein$CD3)
+# is.na(meta_protein$CD3_log) <- 0
+
+# ggplot() +
+#   geom_point(
+#     data=meta_protein,
+#     aes_string(x = "CD3D_gene", y = "CD3", fill = "cell_type"),
+#     size = 4, stroke = 0.2, shape = 21
+#   ) 
+
+all_cells <- readRDS("data/all_cells_fine_cluster_label.rds")
+all_cells <- all_cells[which(rownames(all_cells) %in% meta_protein$cell_name),]
+all_cells <- all_cells[order(match(rownames(all_cells), meta_protein$cell_name)),] 
+all(meta_protein$cell_name == rownames(all_cells))
+meta_protein$T1 <- all_cells$T1
+meta_protein$T2 <- all_cells$T2
+
+# Remove the extreme values for some rare dots. Or we can take the log10
+meta_protein$CD3[is.na(meta_protein$CD3)] <- 20000
+meta_protein$CD3[which(meta_protein$CD3 > 30000)] <- 20000
+meta_protein$CD14[is.na(meta_protein$CD14)] <- 20000
+meta_protein$CD19[is.na(meta_protein$CD19)] <- 20000
+meta_protein$CD19[which(meta_protein$CD19 > 40000)] <- 20000
+meta_protein$PDPN[which(meta_protein$PDPN > 40000)] <- 20000
+meta_protein$CD14[which(meta_protein$CD14 > 40000)] <- 20000
+meta_protein$CD90[which(meta_protein$CD90 > 100000)] <- 50000
+meta_protein$CD34[which(meta_protein$CD34 > 50000)] <- 40000
+meta_protein$CD27[which(meta_protein$CD27 > 10000)] <- 7000
+meta_protein$CD45[which(meta_protein$CD45 > 50000)] <- 2000
+
+protein <- "CD45"
+ggplot() +
+  geom_point(
+    data = meta_protein[order(meta_protein$CD45),],
+    mapping = aes_string(x = "T1", y = "T2", fill = protein),
+    size = 1.2, stroke = 0.001, shape = 21
+  ) +
+  scale_fill_gradientn(
+    colours = colorRampPalette(RColorBrewer::brewer.pal(9, "Greens"))(10),
+    name = "Protein fluorescence"
+  ) +
+  labs(
+    x = "tSNE1",
+    y = "tSNE2",
+    title = protein
+  ) +
+  theme_classic(base_size = 15) +
+  theme(
+    legend.position = "none",
+    # axis.text = element_blank(),
+    # axis.ticks = element_blank(),
+    # panel.grid = element_blank(),
+    plot.title = element_text(color="black")
+  ) 
+ggsave(file = paste("protein_", protein, ".png", sep = ""),
+       width = 3.5, height = 3, dpi = 300)
 dev.off()

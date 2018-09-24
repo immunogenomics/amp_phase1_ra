@@ -16,6 +16,7 @@ library(ggplot2)
 meta <- readRDS("../data/celseq_synovium_meta_5452cells_paper.rds")
 meta <- meta[order(meta$cell_name),]
 meta$cell_name <- as.character(meta$cell_name)
+meta <- meta[-which(meta$fine_cluster == "T-1"),]
 dim(meta)
 
 mat <- meta[, c("sample", "disease", "plate", "fine_cluster", "type")]
@@ -73,15 +74,16 @@ ggplot(
     # y = "Proportion of all clusters"
     y = "Number of cells"
   ) +
-  theme_bw(base_size = 27) +
+  theme_bw(base_size = 12) +
   theme(    
+        legend.position="none",
         # axis.ticks = element_blank(), 
         panel.grid = element_blank(),
-        axis.text = element_text(size = 25),
+        axis.text = element_text(size = 12),
         axis.text.x=element_text(angle=30, hjust=1),
-        axis.text.y = element_text(size = 30))
+        axis.text.y = element_text(size = 12))
 ggsave(file = paste("barplot_sc_cluster_per_patient_goodcells", ".pdf", sep = ""),
-       width = 14, height = 11, dpi = 300)
+       width = 7, height = 6, dpi = 100)
 dev.off()
 
 
