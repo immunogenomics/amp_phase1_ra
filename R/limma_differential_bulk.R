@@ -72,7 +72,7 @@ all(clin_merge$Sample.ID == colnames(all_samples))
 # ---------------------
 # Fibroblast samples
 # ---------------------
-cell_type <- "Fibro"
+cell_type <- "Fibroblast"
 cell_index <- clin_merge$Cell.type==cell_type
 bulk_all <- log2tpm[cell_index]
 bulk_m <- clin_merge[cell_index,]
@@ -93,7 +93,6 @@ all(bulk_m$Sample.ID == colnames(bulk_samples))
 # bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "non-inflamed RA")] <- "non-inflamed"
 # bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "OA")] <- "non-inflamed"
 # all(bulk_m$Sample.ID == colnames(bulk_samples))
-
 
 # Use Limma R function by fitting data access group and plates as covariates 
 des <- with(
@@ -116,21 +115,26 @@ toptable_fdr <-topTable(fit,
                         confint=TRUE,
                         sort.by="p")
 
-# 
 dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
 outFile = "fibro_diff_inflamedRA_OA_mah.txt"
 write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
+gene_order <- c("PTGFR", "FOS", "C3", "CD34", # SC-F1
+                "HLA.DRA", "HLA.DPA1", "HLA.DRB1", "IFI30", "IL6", # SC-F2
+                "DKK3", "CADM1", "CAPG", "AKR1C2", "COL8A2", # SC-F3
+                "HBEGF", "CLIC5", "HTRA4", "ITGA6", "DNASE1L3" #SC-F4
+                )
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                         c("HBEGF", "CLIC5", "HTRA1", "PRG4", "CD55", "DNASE1L3",
-                          "FOS", "F3", "HLA.DRA", # "C3", "PTGFR",
-                           "IL6", "HLA.DPA1", "HLA.DRB1", # "IFI30", 
-                           "CADM1", # "DKK3", # "CAPG", "AKR1C2", "COL8A2",
-                           "ACTA2", "CD34", # "MCAM", "MYH11"
-                           "IRF1", "CXCL12" # "PDGFRB"
-                               )),]
+                         # c("HBEGF", "CLIC5", "HTRA1", "PRG4", "CD55", "DNASE1L3",
+                         #  "FOS", "F3", "HLA.DRA", # "C3", "PTGFR",
+                         #   "IL6", "HLA.DPA1", "HLA.DRB1", # "IFI30", 
+                         #   "CADM1", # "DKK3", # "CAPG", "AKR1C2", "COL8A2",
+                         #   "ACTA2", "CD34", # "MCAM", "MYH11"
+                         #   "IRF1", "CXCL12" # "PDGFRB")
+                         gene_order
+                         ),]
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
@@ -140,57 +144,64 @@ dat_plot$CI.R <- dat_plot$CI.R * (-1)
 # dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
 # dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
+# Use the same order with the single-cell genes order
+dat_plot <- dat_plot[match(gene_order, dat_plot$gene),]
+dat_plot$cluster <- c(rep("SC-F1", 4), rep("SC-F2", 5), rep("SC-F3", 5), rep("SC-F4", 5))
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
 dat_plot[which(dat_plot$gene == "HLA.DRB1"),]$gene <- "HLA-DRB1"
 dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 
+# Label the direction
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
+# Remove stars
+# dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+# dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+# dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
 
-dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
-
-
+# ---
+# Plot sc cluster markers in bulk
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
+                # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
-             size = 3.5
+             mapping=aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             # mapping=aes(x=gene, y= logFC, color = up_down),
+             size = 3
   ) +
+  facet_grid(cluster ~ ., scales = "free", space = "free_x") +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
-  # scale_x_discrete(position = "top") +
-  # scale_y_reverse() +
-  # scale_x_discrete(position = "top") +
+  scale_x_discrete(position = "top") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
-  # coord_flip() +
+  coord_flip() +
   labs(x = NULL, 
-       y = "Fold change"
+       y = NULL
+       # y = "Fold change"
   ) +
-  # coord_cartesian(
-  #   ylim=c(-10, 22)
-  # ) +
-  theme_bw(base_size = 35) +
+  theme_bw(base_size = 20) +
   theme(    
     # axis.ticks = element_blank(), 
     legend.position = "nonoe",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 28, color = "black"),
-    axis.text.x=element_text(angle=45, hjust=1, size = 25)
+    axis.text = element_text(size = 20, color = "black"),
+    axis.text.y = element_text(hjust=1, size=20)
+    # axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # axis.text.y = element_text()
   )
-dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+dev.print("sc_markers_in_bulk.pdf", width = 5, height = 7, dev = pdf)
 dev.off()
 
 
-# ---
+
+# ------------------------------------------------------------
 # Only plot one gene
 bulk_m$gene <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "HLA.DRA"),])
 dat_median <- bulk_m %>% group_by(Mahalanobis_20) %>% summarise(median = median(gene))

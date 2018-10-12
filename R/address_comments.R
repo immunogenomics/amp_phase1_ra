@@ -16,6 +16,7 @@ library(forcats)
 library(pheatmap)
 library(RColorBrewer)
 library(ggrepel)
+library(cetcolor)
 source("../amp_phase1_ra_viewer/R/install-packages.R")
 source("R/meta_colors.R")
 
@@ -640,6 +641,130 @@ ggsave(file = paste("barplot_sc_cluster_per_patient_v2", ".pdf", sep = ""),
        width = 9, height = 6, dpi = 100)
 dev.off()
 
+# -------------------------------------
+# Plot heatmap of donors and clusters
+samp_clu <- table(meta$sample, meta$cluster)
+samp_clu <- as.data.frame(samp_clu)
+colnames(samp_clu) <- c("sample", "cluster", "cells")
+# Add leukocyte-rich, ..., labels
+inflam_label <- read.xls("data/postQC_all_samples.xlsx")
+inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+inflam_label <- inflam_label[which(inflam_label$Patient %in% samp_clu$sample),]
+inflam_label <- inflam_label[, c("Patient", "Mahalanobis_20")]
+colnames(inflam_label)[1] <- "sample"
+samp_clu_merge <- merge(samp_clu, inflam_label, by = "sample")
+
+# 'percent_donor': is the percent of the donor's cells in this cluster,
+# where all four cell types are pooled together.
+# samp_clu_merge %<>% group_by(sample) %>% mutate(percent_donor = 100 * cells / sum(cells))
+# mat <- dcast(data = samp_clu, formula = sample ~ cluster, value.var = "percent_donor")
+mat <- dcast(data = samp_clu_merge, formula = sample ~ cluster, value.var = "cells")
+rownames(mat) <- mat[[1]]
+mat[[1]] <- NULL
+mat <- as.matrix(mat)
+# All in one heatmap: number of cells in one donor and one cluster
+pheatmap(
+  mat = mat,
+  color = colorRampPalette(RColorBrewer::brewer.pal(9, "Greens"))(9),
+  cluster_rows = TRUE,
+  cluster_cols = TRUE,
+  fontsize = 10
+)
+
+# ---
+# Saperate by cell type
+this <- as.data.frame(samp_clu_merge)
+title = "Cell count: T cell"
+# this_celltype <- this[which(this$cluster %in% c("SC-F1", "SC-F2", "SC-F3", "SC-F4")),]
+# this_celltype <- this[which(this$cluster %in% c("SC-B1", "SC-B2", "SC-B3", "SC-B4")),]
+this_celltype <- this[which(this$cluster %in% c("SC-T1", "SC-T2", "SC-T3", "SC-T4", "SC-T5", "SC-T6")),]
+# this_celltype <- this[which(this$cluster %in% c("SC-M1", "SC-M2", "SC-M3", "SC-M4")),]
+this_celltype %<>% group_by(sample) %>% mutate(percent_donor = 100 * cells / sum(cells))
+# ggplot() +
+#   geom_tile(
+#     data = this_celltype,
+#     mapping = aes(x = cluster, y = sample, fill = percent_donor)
+#   ) +
+#   # facet_grid( ~ Mahalanobis_20) +
+#   # scale_fill_gradientn(colours = colorRampPalette(RColorBrewer::brewer.pal(9, "Greens"))(9)) +
+#   scale_fill_gradientn(colours = viridis(10)) +
+#   theme_minimal(base_size = 15) +
+#   theme(
+#     # strip.text = element_blank(),
+#     strip.background = element_blank(),
+#     # axis.ticks = element_blank(), 
+#     # panel.grid = element_blank(),
+#     axis.text.x = element_text(angle = 35, hjust = 1)
+#   ) +
+#   labs(x = NULL, y = NULL, title = "Fibroblast")
+
+
+# One cell type heatmap: number of cells in one donor and one cluster
+# this_celltype <- dcast(data = this_celltype, formula = sample ~ cluster, value.var = "percent_donor")
+this_celltype <- dcast(data = this_celltype, formula = sample ~ cluster, value.var = "cells")
+rownames(this_celltype) <- this_celltype[[1]]
+this_celltype[[1]] <- NULL
+this_celltype <- as.matrix(this_celltype)
+
+# Only plot the 21 post-QC samples
+this_celltype <- this_celltype[which(rownames(this_celltype) %in% names(which(table(meta$sample) > 0))), ]
+temp <- inflam_label[which(inflam_label$Patient %in% rownames(this_celltype)),]
+colnames(temp) <- c("sample", "disease")
+annotation_row = data.frame(
+  disease = temp$disease
+)
+rownames(annotation_row) <- temp$sample
+annotation_col = data.frame(
+  cluster = colnames(this_celltype)
+)
+rownames(annotation_col) <- annotation_col$cluster
+meta_colors$cluster <- meta_colors$fine_cluster
+
+this_celltype <- as.data.frame(this_celltype)
+this_celltype$sample <- rownames(this_celltype)
+# Use the order of OA, leukocyte-poor RA, leukocyte-rich RA
+this_celltype <- this_celltype[order(match(this_celltype$sample, rownames(annotation_row))), ]
+all(rownames(this_celltype) == rownames(annotation_row))
+this_celltype <- this_celltype[, -which(colnames(this_celltype) == "sample")]
+
+# Overwrite default draw_colnames in the pheatmap package.
+# Thanks to Josh O'Brien at http://stackoverflow.com/questions/15505607
+draw_colnames_50 <- function (coln, gaps, ...) {
+  coord <- pheatmap:::find_coordinates(length(coln), gaps)
+  x     <- coord$coord - 0.5 * coord$size
+  res   <- grid::textGrob(
+    coln, x = x, y = unit(1, "npc") - unit(3,"bigpts"),
+    vjust = 0.75, hjust = 1, rot = 50, gp = grid::gpar(...)
+  )
+  return(res)
+}
+assignInNamespace(
+  x = "draw_colnames",
+  value = "draw_colnames_50",
+  ns = asNamespace("pheatmap")
+)
+pdf(paste(title, ".pdf", sep=""), width=4.8, height=4, onefile = FALSE, bg = "white")
+pheatmap(
+  mat = this_celltype,
+  border_color = "white",
+  # color = colorRampPalette(viridis(9))(9),
+  color = cet_pal(100, name = "kgy"),
+  cluster_rows = TRUE,
+  cluster_cols = FALSE,
+  annotation_row = annotation_row,
+  annotation_col = annotation_col,
+  annotation_colors = meta_colors,
+  show_rownames = FALSE,
+  fontsize = 7,
+  main = title
+)
+dev.off()
+
+
+
+# ------------------------------------
 # # Reviewer 1 comment 7
 # sc
 log2cpm <- as.data.frame(log2cpm)
