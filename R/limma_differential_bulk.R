@@ -58,7 +58,7 @@ if (!file.exists(file_mean_sd)) {
   dat_mean_sd <- readRDS(file_mean_sd)
 }
 
-top_percent <- 0.65
+top_percent <- 0.45
 mat_idx <- with(
   dat_mean_sd,
   mean > quantile(mean, top_percent) &
@@ -171,14 +171,14 @@ ggplot() +
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             mapping=aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             mapping=aes(x=reorder(gene, logFC), y= logFC),
              # mapping=aes(x=gene, y= logFC, color = up_down),
              size = 3
   ) +
   facet_grid(cluster ~ ., scales = "free", space = "free_x") +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
-  scale_x_discrete(position = "top") +
+  scale_x_discrete(position = "bottom") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   coord_flip() +
   labs(x = NULL, 
@@ -191,12 +191,12 @@ ggplot() +
     legend.position = "nonoe",
     panel.grid = element_blank(),
     axis.text = element_text(size = 20, color = "black"),
-    axis.text.y = element_text(hjust=1, size=20)
+    axis.text.y = element_text(hjust=1, size=20, face = "italic"),
     # axis.text.x=element_text(angle=45, hjust=1, size = 25)
-    # axis.text.y = element_text()
+    strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
 # dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
-dev.print("sc_markers_in_bulk.pdf", width = 5, height = 7, dev = pdf)
+dev.print("fibro_sc_markers_in_bulk.pdf", width = 5, height = 6, dev = pdf)
 dev.off()
 
 
@@ -360,7 +360,7 @@ dev.off()
 # ---------------------
 # Mono samples
 # ---------------------
-cell_type <- "Mono"
+cell_type <- "Monocyte"
 cell_index <- clin_merge$Cell.type==cell_type
 bulk_all <- log2tpm[cell_index]
 bulk_m <- clin_merge[cell_index,]
@@ -400,14 +400,16 @@ toptable_fdr[order(toptable_fdr$logFC, decreasing = T),][1:30,]
 dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
 
-outFile = "mono_diff_inflamedRA_OA_mah.txt"
-write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-
+# outFile = "mono_diff_inflamedRA_OA_mah.txt"
+# write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
-dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                                 c("NR4A2", "ATF3", "PLAUR", "HBEGF", "IFITM3", "HLA.DRA", "HLA.DPA1",
-                                   "TIMP2", "NUPR1", "ITGB5","HTRA1", "IL1B")),]
+gene_order <- c("NR4A2", "ATF3", "PLAUR", "HBEGF", "IL1B", "RGS2", # SC-M1
+                "VSIG4", "NUPR1", "GPNMB","HTRA1", "MERTK", "CTSK", # SC-M2
+                "C1QA", "MARCO", "CD14", # SC-M3
+                "IFITM3", "SPP1", "IFI6", "LY6E" # SC-M4
+)
+dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% gene_order),]
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
@@ -417,52 +419,59 @@ dat_plot$CI.R <- dat_plot$CI.R * (-1)
 # dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
 # dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
+# Use the same order with the single-cell genes order
+dat_plot <- dat_plot[match(gene_order, dat_plot$gene),]
+dat_plot$cluster <- c(rep("SC-M1", 6), rep("SC-M2", 6), rep("SC-M3", 3), rep("SC-M4", 4))
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
 dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
-
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
-dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
+# dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
+# dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
+# dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
 
 # Plot genes based on logFC
+# Plot sc cluster markers in bulk
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
+                # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
-             size = 3.5
+             # mapping=aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             mapping=aes(x=reorder(gene, logFC), y= logFC),
+             # mapping=aes(x=gene, y= logFC, color = up_down),
+             size = 3
   ) +
+  facet_grid(cluster ~ ., scales = "free", space = "free_x") +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
-  # scale_x_discrete(position = "top") +
-  # scale_y_reverse() +
-  # scale_x_discrete(position = "top") +
+  scale_x_discrete(position = "bottom") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
-  # coord_flip() +
+  coord_flip() +
   labs(x = NULL, 
-       y = "Fold change"
+       y = NULL
+       # y = "Fold change"
   ) +
-  # coord_cartesian(
-  #   ylim=c(-10.5, 5)
-  # ) +
-  theme_bw(base_size = 28) +
+  theme_bw(base_size = 21) +
   theme(    
-    legend.position = "none",
     # axis.ticks = element_blank(), 
+    legend.position = "nonoe",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 26, color = "black"),
-    axis.text.x=element_text(angle=45, hjust=1, size = 25)
-    # axis.text.y = element_text()
+    axis.text = element_text(size = 21, color = "black"),
+    axis.text.y = element_text(hjust=1, size=21, face = "italic")
+    # axis.text.x=element_text(angle=45, hjust=1, size = 25)
+    # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
-dev.print("mono_DE_genes_FC_mah.pdf", width = 7.7, height = 4.5, dev = pdf)
+# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+dev.print("mono_sc_markers_in_bulk.pdf", width = 5, height = 7.5, dev = pdf)
 dev.off()
+
+
 
 
 # Take the top markers for each single-cell cluster and summarize 
@@ -616,27 +625,26 @@ toptable_fdr[order(toptable_fdr$logFC, decreasing = F),][1:50,]
 # 
 dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-1),])
 
-outFile = "bcell_diff_inflamedRA_OA_mah.txt"
-write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
-
+# outFile = "bcell_diff_inflamedRA_OA_mah.txt"
+# write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
-dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                                 c("XBP1", "XBP1","IGHG1", "CD38", "SDC1", "IL6", "IGHD", "IGHM", # "FCRL4",
-                                   "ITGAX","CD19", "IGHM", "MS4A1", # "ZEB2", "AICDA", "ACTB",
-                                   "HLA.DPB1", # "HLA.DRA", "CXCR5", "ADIRF", "RNASE1", 
-                                   "MZB1", "FKBP11" # "DERL3"
-                                 )),]
-
+gene_order <- c("CD83", "CD38", "IL6", "IGHD", "IGHM", "BACH2", # SC-B1
+                "HLA.DPB1", "HLA.DRA", "MS4A1", # SC-B2
+                "ITGAX", "TBX21", "ZEB2", "ACTB", # SC-B3
+                "XBP1", "MZB1", "FKBP11", "SSR4", "DERL3" # SC-B4
+)
+dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% gene_order),]
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
 # dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
+# Use the same order with the single-cell genes order
+dat_plot <- dat_plot[match(gene_order, dat_plot$gene),]
+dat_plot$cluster <- c(rep("SC-B1", 6), rep("SC-B2", 3), rep("SC-B3", 4), rep("SC-B4", 5))
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
@@ -645,43 +653,46 @@ dat_plot[which(dat_plot$gene == "HLA.DPB1"),]$gene <- "HLA-DPB1"
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
-dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
 
 
 # Plot genes based on logFC
+# Plot sc cluster markers in bulk
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
-                width=0.2, size=0.7, color = "black"
+                mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
+                # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
+                width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
-             size = 3.5
+             # mapping=aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             mapping=aes(x=reorder(gene, logFC), y= logFC),
+             # mapping=aes(x=gene, y= logFC, color = up_down),
+             size = 3
   ) +
+  facet_grid(cluster ~ ., scales = "free", space = "free_x") +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
-  # scale_color_manual(values = c('grey70', 'black')) +
   geom_hline(yintercept = 0, size = 0.3) +
-  # scale_x_discrete(position = "top") +
-  # scale_y_reverse() +
-  # scale_x_discrete(position = "top") +
+  scale_x_discrete(position = "bottom") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
-  # coord_flip() +
+  coord_flip() +
   labs(x = NULL, 
-       y = "Fold change"
+       y = NULL
+       # y = "Fold change"
   ) +
-  theme_bw(base_size = 28) +
+  theme_bw(base_size = 21) +
   theme(    
     # axis.ticks = element_blank(), 
-    legend.position = "none",
+    legend.position = "nonoe",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 26, color = "black"),
-    axis.text.x=element_text(angle = 45, hjust = 1, size = 25)
-    # axis.text.y = element_text()
+    axis.text = element_text(size = 21, color = "black"),
+    axis.text.y = element_text(hjust=1, size=21, face = "italic")
+    # axis.text.x=element_text(angle=45, hjust=1, size = 25)
+    # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
-dev.print("bcell_DE_genes_FC.pdf", width = 8, height = 4, dev = pdf)
+# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+dev.print("bcell_sc_markers_in_bulk.pdf", width = 5, height = 7.5, dev = pdf)
 dev.off()
+
 
 
 
@@ -791,74 +802,79 @@ toptable_fdr <-topTable(fit, coef = "Mahalanobis_20OA",
                         confint=TRUE,
                         sort.by="p")
 
-# 
 dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-2),])
 
-outFile = "tcell_diff_inflamedRA_OA_mah.txt"
-write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
+# outFile = "tcell_diff_inflamedRA_OA_mah.txt"
+# write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
-dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% 
-                                 c("HLA.DQA2", "CXCL13", "IFNG", # "CCL4L2",
-                                   "PDCD1", "NFKBIZ", "CTLA4", # "IL1B",
-                                   "TIGIT", "ICOS", "CCR7", # "SELL", # "CD200",
-                                   "NFKBID", "NR4A2", # "CLECL1","PTGR1"
-                                   # "SPINT1", "STX3", "SPINT" "GEM", 
-                                   "FOXP3", "GZMB" # "HLA.DRB5"
-                                 )),]
+gene_order <- c("IL7R", "SELL", "CCR7", "NFKBIZ", "LEF1", # SC-T1
+                "FOXP3", "CTLA4", "TIGIT", "DUSP4",  # SC-T2
+                "CXCL13", "PDCD1", "CD200", # SC-T3
+                "GZMK", "CD8A", "NKG7", "GZMA", # SC-T4
+                "GNLY", "GZMB", "ZNF683", "PRF1", # SC-T5
+                "HLA.DRB1", "GZMB", "IFNG" # SC-T6
+)
+dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% gene_order),]
 
 dat_plot$gene <- rownames(dat_plot)
 dat_plot$logFC <- dat_plot$logFC * (-1)
 # dat_plot$FC <- 2^abs(dat_plot$logFC) * sign(dat_plot$logFC)
 dat_plot$CI.L <- dat_plot$CI.L * (-1)
 dat_plot$CI.R <- dat_plot$CI.R * (-1)
-# dat_plot$CI.L_FC <- (dat_plot$FC + 2^(dat_plot$CI.L - dat_plot$logFC))
-# dat_plot$CI.R_FC <- (dat_plot$FC - 2^(dat_plot$logFC - dat_plot$CI.R)) 
 
+# Use the same order with the single-cell genes order
+dat_plot <- dat_plot[match(gene_order, dat_plot$gene),]
+dat_plot$cluster <- c(rep("SC-T1", 5), rep("SC-T2", 4), rep("SC-T3", 3), rep("SC-T4", 4),
+                      rep("SC-T5", 4), rep("SC-T6", 3))
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRB5"),]$gene <- "HLA-DRB5"
 dat_plot[which(dat_plot$gene == "HLA.DQA2"),]$gene <- "HLA-DQA2"
+dat_plot[which(dat_plot$gene == "HLA.DRB1"),]$gene <- "HLA-DRB1"
+dat_plot[which(dat_plot$gene == "HLA.DQA1"),]$gene <- "HLA-DQA1"
 
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
 dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
-dat_plot$gene[which(dat_plot$P.Value < 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-4)], "****", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-3 & dat_plot$P.Value > 1e-4)], "***", sep = "")
-dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)] <- paste(dat_plot$gene[which(dat_plot$P.Value < 1e-2 & dat_plot$P.Value > 1e-3)], "**", sep = "")
-
 
 # Plot genes based on logFC
+# Plot sc cluster markers in bulk
 ggplot() +
   geom_errorbar(data=dat_plot, 
-                mapping=aes(x=reorder(gene, -logFC), ymin=CI.L, ymax=CI.R), 
+                mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
+                # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
                 width=0.3, size=0.9, color = "black"
   ) +
   geom_point(data=dat_plot, 
-             aes(x=reorder(gene, -logFC), y= logFC, color = up_down),
-             size = 3.5
+             # mapping=aes(x=reorder(gene, logFC), y= logFC, color = up_down),
+             mapping=aes(x=reorder(gene, logFC), y= logFC),
+             # mapping=aes(x=gene, y= logFC, color = up_down),
+             size = 3
   ) +
-  scale_color_manual(values = c('#FF7F00', '#6A3D9A')) +
+  facet_grid(cluster ~ ., scales = "free", space = "free_x") +
+  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
-  # scale_x_discrete(position = "top") +
-  # scale_y_reverse() +
-  # scale_x_discrete(position = "top") +
+  scale_x_discrete(position = "bottom") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
-  # coord_flip() +
+  coord_flip() +
   labs(x = NULL, 
-       y = "Fold change"
+       y = NULL
+       # y = "Fold change"
   ) +
-  theme_bw(base_size = 28) +
+  theme_bw(base_size = 21) +
   theme(    
     # axis.ticks = element_blank(), 
     legend.position = "nonoe",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 26, color = "black"),
-    axis.text.x=element_text(angle=45, hjust=1, size = 25)
-    # axis.text.y = element_text()
+    axis.text = element_text(size = 21, color = "black"),
+    axis.text.y = element_text(hjust=1, size=21, face = "italic")
+    # axis.text.x=element_text(angle=45, hjust=1, size = 25)
+    # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
-dev.print("tcell_DE_genes_FC.pdf", width = 7.5, height = 4, dev = pdf)
+# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+dev.print("Tcell_sc_markers_in_bulk.pdf", width = 5, height = 8.5, dev = pdf)
 dev.off()
 
 

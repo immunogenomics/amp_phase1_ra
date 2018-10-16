@@ -968,7 +968,6 @@ dev.off()
 # Reviewer 2 comment 5.4
 # ----------------------------
 # Correlation between cytof and bulk on the measured proteomic cytof markers
-
 load("data/synData.Fibro.downsample.SNE.RData")
 load("data/synData.Bcell.downsample.SNE.RData")
 load("data/synData.Mono.downsample.SNE.RData")
@@ -984,66 +983,56 @@ synData.Mono.downsample$sampleID[which(synData.Mono.downsample$sampleID == "300-
 synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0486C")] <- "300-0486"
 synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0511A")] <- "300-0511"
 
-
-# ggplot() +
-#   geom_point(
-#     data = synData.Bcell.downsample,
-#     mapping = aes_string(x = "SNE1", y = "SNE2", fill = "CD19"),
-#     shape = 21, size = 1.1, stroke = 0.011
-#   ) +
-#   scale_fill_gradientn(
-#     colours = colorRampPalette(RColorBrewer::brewer.pal(9, "Greens"))(9),
-#     name = "Normalized intensity"
-#   ) +
-#   labs(
-#     x = NULL,
-#     y = NULL
-#   ) +
-#   theme_bw(base_size = 22) +
-#   theme(
-#     legend.position = "none",
-#     axis.text = element_blank(),
-#     axis.ticks = element_blank(),
-#     panel.grid = element_blank()
-#   )
-
+# -------
 # fibro
-synData.Fibro_sampleID <- synData.Fibro.downsample[, c("sampleID", "CD90")]
+synData.Fibro_sampleID <- synData.Fibro.downsample[, c("sampleID", "CD90", "CD34")]
 synData.Fibro_mean <- synData.Fibro_sampleID %>%
   dplyr::group_by(sampleID) %>%
-  dplyr::summarise(ave_mean = mean(CD90),
-                   ave_median = median(CD90))
+  dplyr::summarise(ave_mean_CD90 = mean(CD90),
+                   ave_median_CD90 = median(CD90),
+                   ave_mean_CD34 = mean(CD34),
+                   ave_median_CD34 = median(CD34)
+                   )
 synData.Fibro_mean <- as.data.frame(synData.Fibro_mean)
 
 # B cell
-# synData.Bcell_sampleID <- synData.Bcell.downsample[, c("sampleID", "IgD")]
-synData.Bcell_sampleID <- synData.Bcell.downsample[, c("sampleID", "CD11c")]
+synData.Bcell_sampleID <- synData.Bcell.downsample[, c("sampleID", "CD11c", "IgD")]
 synData.Bcell_mean <- synData.Bcell_sampleID %>%
   dplyr::group_by(sampleID) %>%
-  dplyr::summarise(ave_mean = mean(CD11c),
-                   ave_median = median(CD11c))
+  dplyr::summarise(ave_mean_CD11c = mean(CD11c),
+                   ave_median_CD11c = median(CD11c),
+                   ave_mean_IgD = mean(IgD),
+                   ave_medianIgD = median(IgD)
+                   )
 synData.Bcell_mean <- as.data.frame(synData.Bcell_mean)
 
 # Mono
-# synData.Mono_sampleID <- synData.Mono.downsample[, c("sampleID", "CCR2")]
-synData.Mono_sampleID <- synData.Mono.downsample[, c("sampleID", "CD38")]
+synData.Mono_sampleID <- synData.Mono.downsample[, c("sampleID", "CD38", "CCR2")]
 synData.Mono_mean <- synData.Mono_sampleID %>%
   dplyr::group_by(sampleID) %>%
-  dplyr::summarise(ave_mean = mean(CD38),
-                   ave_median = median(CD38))
+  dplyr::summarise(ave_mean_CD38 = mean(CD38),
+                   ave_median_CD38 = median(CD38),
+                   ave_mean_CCR2 = mean(CCR2),
+                   ave_median_CCR2 = median(CCR2)
+                   )
 synData.Mono_mean <- as.data.frame(synData.Mono_mean)
 
 # T cell
-synData.Tcell_sampleID <- synData.Tcell.downsample[, c("sampleID", "CD8a")]
+synData.Tcell_sampleID <- synData.Tcell.downsample[, c("sampleID", "CD8a", "PD.1")]
 synData.Tcell_mean <- synData.Tcell_sampleID %>%
   dplyr::group_by(sampleID) %>%
-  dplyr::summarise(ave_mean = mean(CD8a),
-                   ave_median = median(CD8a))
+  dplyr::summarise(ave_mean_CD8a = mean(CD8a),
+                   ave_median_CD8a = median(CD8a),
+                   ave_mean_PD1 = mean(PD.1),
+                   ave_median_PD1 = median(PD.1)
+                   )
 synData.Tcell_mean <- as.data.frame(synData.Tcell_mean)
 
+# -------
 # bulk data
 # fibro
 bulk_meta$CD90_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "THY1"), ])
+bulk_meta$CD34_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD34"), ])
 cell_type <- "Fibroblast"
 log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
 bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
@@ -1052,11 +1041,11 @@ dim(bulk_meta_fibro)
 dim(log2tpm_fibro)
 
 # B cell
-bulk_meta$MS4A1 <- as.numeric(log2tpm[which(rownames(log2tpm) == "MS4A1"), ])
+# bulk_meta$MS4A1 <- as.numeric(log2tpm[which(rownames(log2tpm) == "MS4A1"), ])
 bulk_meta$ITGAX <- as.numeric(log2tpm[which(rownames(log2tpm) == "ITGAX"), ])
-bulk_meta$HLA.DRA_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "HLA.DRA"), ])
-bulk_meta$CD19_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD19"), ])
-bulk_meta$IGHM_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "IGHM"), ])
+# bulk_meta$HLA.DRA_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "HLA.DRA"), ])
+# bulk_meta$CD19_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD19"), ])
+# bulk_meta$IGHM_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "IGHM"), ])
 bulk_meta$IGHD_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "IGHD"), ])
 cell_type <- "B cell"
 log2tpm_bcell <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
@@ -1067,6 +1056,7 @@ dim(log2tpm_bcell)
 
 # Mono
 bulk_meta$CD38_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CD38"), ])
+bulk_meta$CCR2_gene <- as.numeric(log2tpm[which(rownames(log2tpm) == "CCR2"), ])
 cell_type <- "Monocyte"
 log2tpm_mono <- log2tpm[, which(bulk_meta$Cell.type == cell_type)]
 bulk_meta_mono <- bulk_meta[which(bulk_meta$Cell.type == cell_type),]
@@ -1086,6 +1076,7 @@ all(colnames(log2tpm_tcell) == bulk_meta_tcell$Sample.ID)
 dim(bulk_meta_tcell)
 dim(log2tpm_tcell)
 
+# -------
 # Get manhalonobis labels
 inflam_label <- read.xls("data/postQC_all_samples.xlsx")
 inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
@@ -1131,7 +1122,7 @@ all(bulk_meta_tcell$Donor.ID == inflam_label$Patient)
 bulk_meta_tcell$Mahalanobis_20 <- inflam_label$Mahalanobis_20
 table(bulk_meta_tcell$Mahalanobis_20)
 
-
+# -------
 # Overlapped samples between bulk fibroblast samples with cytof fibroblast samples
 # Fibro
 over <- intersect(synData.Fibro_mean$sampleID, bulk_meta_fibro$Donor.ID)
@@ -1139,8 +1130,10 @@ synData.Fibro_mean <- synData.Fibro_mean[which(synData.Fibro_mean$sampleID %in% 
 bulk_meta_fibro <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% over), ]
 bulk_meta_fibro <- bulk_meta_fibro[order(match(bulk_meta_fibro$Donor.ID, synData.Fibro_mean$sampleID)), ]
 all(synData.Fibro_mean$sampleID == bulk_meta_fibro$Donor.ID)
-bulk_meta_fibro$cytof_ave_mean <- synData.Fibro_mean$ave_mean
-bulk_meta_fibro$cytof_ave_median <- synData.Fibro_mean$ave_median
+bulk_meta_fibro$cytof_ave_mean_CD90 <- synData.Fibro_mean$ave_mean_CD90
+bulk_meta_fibro$cytof_ave_median_CD90 <- synData.Fibro_mean$ave_median_CD90
+bulk_meta_fibro$cytof_ave_mean_CD34 <- synData.Fibro_mean$ave_mean_CD34
+bulk_meta_fibro$cytof_ave_median_CD34 <- synData.Fibro_mean$ave_median_CD34
 
 # B cell
 over <- intersect(synData.Bcell_mean$sampleID, bulk_meta_bcell$Donor.ID)
@@ -1148,8 +1141,10 @@ synData.Bcell_mean <- synData.Bcell_mean[which(synData.Bcell_mean$sampleID %in% 
 bulk_meta_bcell <- bulk_meta_bcell[which(bulk_meta_bcell$Donor.ID %in% over), ]
 bulk_meta_bcell <- bulk_meta_bcell[order(match(bulk_meta_bcell$Donor.ID, synData.Bcell_mean$sampleID)), ]
 all(synData.Bcell_mean$sampleID == bulk_meta_bcell$Donor.ID)
-bulk_meta_bcell$cytof_ave_mean <- synData.Bcell_mean$ave_mean
-bulk_meta_bcell$cytof_ave_median <- synData.Bcell_mean$ave_median
+bulk_meta_bcell$cytof_ave_mean_CD11c <- synData.Bcell_mean$ave_mean_CD11c
+bulk_meta_bcell$cytof_ave_median_CD11c <- synData.Bcell_mean$ave_median_CD11c
+bulk_meta_bcell$cytof_ave_mean_IgD <- synData.Bcell_mean$ave_mean_IgD
+bulk_meta_bcell$cytof_ave_median_IgD <- synData.Bcell_mean$ave_medianIgD
 
 # Mono
 over <- intersect(synData.Mono_mean$sampleID, bulk_meta_mono$Donor.ID)
@@ -1157,8 +1152,10 @@ synData.Mono_mean <- synData.Mono_mean[which(synData.Mono_mean$sampleID %in% ove
 bulk_meta_mono <- bulk_meta_mono[which(bulk_meta_mono$Donor.ID %in% over), ]
 bulk_meta_mono <- bulk_meta_mono[order(match(bulk_meta_mono$Donor.ID, synData.Mono_mean$sampleID)), ]
 all(synData.Mono_mean$sampleID == bulk_meta_mono$Donor.ID)
-bulk_meta_mono$cytof_ave_mean <- synData.Mono_mean$ave_mean
-bulk_meta_mono$cytof_ave_median <- synData.Mono_mean$ave_median
+bulk_meta_mono$cytof_ave_mean_CD38 <- synData.Mono_mean$ave_mean_CD38
+bulk_meta_mono$cytof_ave_median_CD38 <- synData.Mono_mean$ave_median_CD38
+bulk_meta_mono$cytof_ave_mean_CCR2 <- synData.Mono_mean$ave_mean_CCR2
+bulk_meta_mono$cytof_ave_median_CCR2 <- synData.Mono_mean$ave_median_CCR2
 
 # T cell
 over <- intersect(synData.Tcell_mean$sampleID, bulk_meta_tcell$Donor.ID)
@@ -1166,129 +1163,47 @@ synData.Tcell_mean <- synData.Tcell_mean[which(synData.Tcell_mean$sampleID %in% 
 bulk_meta_tcell <- bulk_meta_tcell[which(bulk_meta_tcell$Donor.ID %in% over), ]
 bulk_meta_tcell <- bulk_meta_tcell[order(match(bulk_meta_tcell$Donor.ID, synData.Tcell_mean$sampleID)), ]
 all(synData.Tcell_mean$sampleID == bulk_meta_tcell$Donor.ID)
-bulk_meta_tcell$cytof_ave_mean <- synData.Tcell_mean$ave_mean
-bulk_meta_tcell$cytof_ave_median <- synData.Tcell_mean$ave_median
+bulk_meta_tcell$cytof_ave_mean_CD8a <- synData.Tcell_mean$ave_mean_CD8a
+bulk_meta_tcell$cytof_ave_median_CD8a <- synData.Tcell_mean$ave_median_CD8a
+bulk_meta_tcell$cytof_ave_mean_PD1 <- synData.Tcell_mean$ave_mean_PD1
+bulk_meta_tcell$cytof_ave_median_PD1 <- synData.Tcell_mean$ave_median_PD1
 
-
-# Fibro
-ggplot() +
-  geom_point(
-    data = bulk_meta_fibro,
-    # mapping = aes_string(x = "CD90", y = "cytof_ave_mean", fill = "Mahalanobis_20"),
-    mapping = aes_string(x = "CD34_gene", y = "cytof_ave_mean"),
-    size = 3, stroke = 0.2, shape = 20, color = "#08519C"
-  ) +
-  # scale_fill_manual(values = meta_colors$disease, name = "") +
-  labs(
-    x = "Bulk RNA-seq expression",
-    y = "Averaged mass cytometry \n proteomic expression",
-    title = "Fibroblast samples\nCD34"
-  ) +
-  theme_classic(base_size = 14) +
-  theme(
-    legend.position = "none"
-    # axis.text = element_blank()
-    # axis.ticks = element_blank()
-    # panel.grid = element_blank()
-  ) 
-ggsave(file = paste("cytof_bulk_per_sample_CD34", ".pdf", sep = ""),
-       width = 3, height = 3, dpi = 300)
-dev.off()
-
-# B cell
-ggplot() +
-  geom_point(
-    data = bulk_meta_bcell,
-    mapping = aes_string(x = "IGHD_gene", y = "cytof_ave_mean"),
-    size = 3, stroke = 0.2, shape = 20, color = "#E31A1C"
-  ) +
-  # scale_fill_manual(values = meta_colors$disease, name = "") +
-  labs(
-    x = "Bulk RNA-seq expression",
-    y = "Averaged mass cytometry \n proteomic expression",
-    title = "B cell samples\nIgD"
-  ) +
-  theme_classic(base_size = 14) +
-  theme(
-    legend.position = "none"
-    # axis.text = element_blank()
-    # axis.ticks = element_blank()
-    # panel.grid = element_blank()
-  ) 
-ggsave(file = paste("cytof_bulk_per_sample_IGH", ".pdf", sep = ""),
-       width = 3, height = 3, dpi = 300)
-dev.off()
-
-# Mono
-ggplot() +
-  geom_point(
-    data = bulk_meta_mono,
-    mapping = aes_string(x = "CCR2_gene", y = "cytof_ave_mean"),
-    size = 3, stroke = 0.2, shape = 20, color = "#DE77AE"
-  ) +
-  # scale_fill_manual(values = meta_colors$disease, name = "") +
-  labs(
-    x = "Bulk RNA-seq expression",
-    y = "Averaged mass cytometry \n proteomic expression",
-    title = "Monocyte samples\nCCR2"
-  ) +
-  theme_classic(base_size = 14) +
-  theme(
-    legend.position = "none"
-    # axis.text = element_blank()
-    # axis.ticks = element_blank()
-    # panel.grid = element_blank()
-  ) 
-ggsave(file = paste("cytof_bulk_per_sample_CCR2", ".pdf", sep = ""),
-       width = 3, height = 3, dpi = 300)
-dev.off()
-
-
-# T cell
-ggplot() +
-  geom_point(
-    data = bulk_meta_tcell,
-    mapping = aes_string(x = "PDCD1_gene", y = "cytof_ave_mean"),
-    size = 3, stroke = 0.2, shape = 20, color = "#A65628"
-  ) +
-  # scale_fill_manual(values = meta_colors$disease, name = "") +
-  labs(
-    x = "Bulk RNA-seq expression",
-    y = "Averaged mass cytometry \n proteomic expression",
-    title = "T cell samples\nPD1"
-  ) +
-  theme_classic(base_size = 14) +
-  theme(
-    legend.position = "none"
-    # axis.text = element_blank()
-    # axis.ticks = element_blank()
-    # panel.grid = element_blank()
-  ) 
-ggsave(file = paste("cytof_bulk_per_sample_PDCD1", ".pdf", sep = ""),
-       width = 3.2, height = 3, dpi = 300)
-dev.off()
 
 
 # Plot fitted line -------
 # Fibro
-fit <- lm(CD90_gene ~ cytof_ave_mean, data = bulk_meta_fibro)
+fit <- lm(CD34_gene ~ cytof_ave_mean_CD34, data = bulk_meta_fibro)
+lm_eqn <- function(fit){
+  eq <- substitute(# italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    ~~italic(r)^2~"="~r2*","~~italic(p)~"="~pvalue,
+    list(
+      # a = format(coef(m)[1], digits = 2), 
+      # b = format(coef(m)[2], digits = 2), 
+      r2 = format(summary(fit)$r.squared, digits = 3),
+      pvalue = format(summary(fit)$coefficients[2,'Pr(>|t|)'], digits=1)
+    )
+  )
+  as.character(as.expression(eq));                 
+}
 ggplot(
   fit$model,
   aes(
-    x=CD90_gene,
-    y=cytof_ave_mean
+    x=CD34_gene,
+    y=cytof_ave_mean_CD34
    )
   ) +
+  geom_text(x=2.2, y=2.7, label=lm_eqn(fit), color='black', fontface="plain", size=4, parse=T) +
   geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
-              size = 1.5, linetype="dashed",
-              col= "darkgrey", fill="lightgrey") +
+              size = 0.7, linetype="dashed",
+              col= "black", fill="lightgrey") +
   geom_point(
     shape=21, size = 2.5, stroke = 0.1, fill = "#08519C"
   ) +
   labs(
     x = "",
     y = "",
-    title = "Fibroblast samples\nCD90"
+    title = "CD34"
+    # title = "Fibroblast samples\nCD90"
   ) +
   theme_classic(base_size = 16) +
   theme(
@@ -1297,29 +1212,43 @@ ggplot(
     # axis.ticks = element_blank()
     # panel.grid = element_blank()
   ) 
-ggsave(file = paste("cytof_bulk_per_sample_CD90_fit", ".pdf", sep = ""),
-       width = 3, height = 3.2, dpi = 300)
+ggsave(file = paste("cytof_bulk_per_sample_CD34_fit", ".pdf", sep = ""),
+       width = 3, height = 3, dpi = 300)
 dev.off()
 
+
 # Mono
-fit <- lm(CD38_gene ~ cytof_ave_mean, data = bulk_meta_mono)
+fit <- lm(CCR2_gene ~ cytof_ave_mean_CCR2, data = bulk_meta_mono)
+lm_eqn <- function(fit){
+  eq <- substitute(# italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    ~~italic(r)^2~"="~r2*","~~italic(p)~"="~pvalue,
+    list(
+      # a = format(coef(m)[1], digits = 2), 
+      # b = format(coef(m)[2], digits = 2), 
+      r2 = format(summary(fit)$r.squared, digits = 3),
+      pvalue = format(summary(fit)$coefficients[2,'Pr(>|t|)'], digits=1)
+    )
+  )
+  as.character(as.expression(eq));                 
+}
 ggplot(
   fit$model,
   aes(
-    x=CD38_gene,
-    y=cytof_ave_mean
+    x=CCR2_gene,
+    y=cytof_ave_mean_CCR2
     )
   ) +
+  geom_text(x=1.5, y=3, label=lm_eqn(fit), color='black', fontface="plain", size=4, parse=T) +
   geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
-              size = 1.5, linetype="dashed",
-              col= "darkgrey", fill="lightgrey") +
+              size = 0.7, linetype="dashed",
+              col= "black", fill="lightgrey") +
   geom_point(
     shape=21, size = 2.5, stroke = 0.1, fill = "#DE77AE"
   ) +
   labs(
     x = "",
     y = "",
-    title = "Monocyte samples\nCD38"
+    title = "CCR2"
   ) +
   theme_classic(base_size = 16) +
   theme(
@@ -1328,31 +1257,45 @@ ggplot(
     # axis.ticks = element_blank()
     # panel.grid = element_blank()
   ) 
-ggsave(file = paste("cytof_bulk_per_sample_CD38_fit", ".pdf", sep = ""),
+ggsave(file = paste("cytof_bulk_per_sample_CCR2_fit", ".pdf", sep = ""),
        width = 3, height = 3.2, dpi = 300)
 dev.off()
 
 
 # B cell
-fit <- lm(ITGAX ~ cytof_ave_mean, data = bulk_meta_bcell)
-ggplot(
+fit <- lm(IGHD_gene ~ cytof_ave_mean_IgD, data = bulk_meta_bcell)
+lm_eqn <- function(fit){
+  eq <- substitute(# italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    ~~italic(r)^2~"="~r2*","~~italic(p)~"="~pvalue,
+    list(
+      # a = format(coef(m)[1], digits = 2), 
+      # b = format(coef(m)[2], digits = 2), 
+      r2 = format(summary(fit)$r.squared, digits = 3),
+      pvalue = format(summary(fit)$coefficients[2,'Pr(>|t|)'], digits=1)
+    )
+  )
+  as.character(as.expression(eq));                 
+}
+ggplot( 
   fit$model,
   aes(
-    x=ITGAX,
-    y=cytof_ave_mean
+    x=IGHD_gene,
+    y=cytof_ave_mean_IgD
    )
   ) +
+  geom_text(x=5.5, y=2.1, label=lm_eqn(fit), color='black', fontface="plain", size=4, parse=T) +
   geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
-              size = 1.5, linetype="dashed",
-              col= "darkgrey", fill="lightgrey") +
+              size = 0.7, linetype="dashed",
+              col= "black", fill="lightgrey") +
   geom_point(
     shape=21, size = 2.5, stroke = 0.1, fill = "#E31A1C"
   ) +
   labs(
     x = "",
     y = "",
-    title = "B cell samples\nCD11c"
+    title = "IgD"
   ) +
+  scale_y_continuous(breaks=c(0,1,2)) +
   theme_classic(base_size = 16) +
   theme(
     legend.position = "none"
@@ -1360,31 +1303,45 @@ ggplot(
     # axis.ticks = element_blank()
     # panel.grid = element_blank()
   ) 
-ggsave(file = paste("cytof_bulk_per_sample_ITGAX_fit", ".pdf", sep = ""),
-       width = 3, height = 3.2, dpi = 300)
+ggsave(file = paste("cytof_bulk_per_sample_IgD_fit", ".pdf", sep = ""),
+       width = 3, height = 3, dpi = 300)
 dev.off()
 
 
 # T cell
-fit <- lm(CD8A_gene ~ cytof_ave_mean, data = bulk_meta_tcell)
+fit <- lm(PDCD1_gene ~ cytof_ave_mean_PD1, data = bulk_meta_tcell)
+lm_eqn <- function(fit){
+  eq <- substitute(# italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+    ~~italic(r)^2~"="~r2*","~~italic(p)~"="~pvalue,
+    list(
+      # a = format(coef(m)[1], digits = 2), 
+      # b = format(coef(m)[2], digits = 2), 
+      r2 = format(summary(fit)$r.squared, digits = 3),
+      pvalue = format(summary(fit)$coefficients[2,'Pr(>|t|)'], digits=1)
+    )
+  )
+  as.character(as.expression(eq));                 
+}
 ggplot(
   fit$model,
   aes(
-    x=CD8A_gene,
-    y=cytof_ave_mean
+    x=PDCD1_gene,
+    y=cytof_ave_mean_PD1
     )
   ) +
+  geom_text(x=4.95, y=2.2, label=lm_eqn(fit), color='black', fontface="plain", size=4, parse=T) +
   geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
-              size = 1.5, linetype="dashed",
-              col= "darkgrey", fill="lightgrey") +
+              size = 0.7, linetype="dashed",
+              col= "black", fill="lightgrey") +
   geom_point(
     shape=21, size = 2.5, stroke = 0.1, fill = "#A65628"
   ) +
   labs(
     x = "",
     y = "",
-    title = "T cell samples\nCD8"
+    title = "PD1"
   ) +
+  scale_y_continuous(breaks=c(0,1,2)) +
   theme_classic(base_size = 16) +
   theme(
     legend.position = "none"
@@ -1392,9 +1349,108 @@ ggplot(
     # axis.ticks = element_blank()
     # panel.grid = element_blank()
   ) 
-ggsave(file = paste("cytof_bulk_per_sample_CD8A_fit", ".pdf", sep = ""),
+ggsave(file = paste("cytof_bulk_per_sample_PD1_fit", ".pdf", sep = ""),
        width = 3, height = 3.2, dpi = 300)
 dev.off()
+
+
+# # Fibro
+# ggplot() +
+#   geom_point(
+#     data = bulk_meta_fibro,
+#     # mapping = aes_string(x = "CD90", y = "cytof_ave_mean", fill = "Mahalanobis_20"),
+#     mapping = aes_string(x = "CD34_gene", y = "cytof_ave_mean_CD90"),
+#     size = 3, stroke = 0.2, shape = 20, color = "#08519C"
+#   ) +
+#   # scale_fill_manual(values = meta_colors$disease, name = "") +
+#   labs(
+#     x = "Bulk RNA-seq expression",
+#     y = "Averaged mass cytometry \n proteomic expression",
+#     title = "Fibroblast samples\nCD34"
+#   ) +
+#   theme_classic(base_size = 14) +
+#   theme(
+#     legend.position = "none"
+#     # axis.text = element_blank()
+#     # axis.ticks = element_blank()
+#     # panel.grid = element_blank()
+#   ) 
+# ggsave(file = paste("cytof_bulk_per_sample_CD34", ".pdf", sep = ""),
+#        width = 3, height = 3, dpi = 300)
+# dev.off()
+# 
+# # B cell
+# ggplot() +
+#   geom_point(
+#     data = bulk_meta_bcell,
+#     mapping = aes_string(x = "IGHD_gene", y = "cytof_ave_mean"),
+#     size = 3, stroke = 0.2, shape = 20, color = "#E31A1C"
+#   ) +
+#   # scale_fill_manual(values = meta_colors$disease, name = "") +
+#   labs(
+#     x = "Bulk RNA-seq expression",
+#     y = "Averaged mass cytometry \n proteomic expression",
+#     title = "B cell samples\nIgD"
+#   ) +
+#   theme_classic(base_size = 14) +
+#   theme(
+#     legend.position = "none"
+#     # axis.text = element_blank()
+#     # axis.ticks = element_blank()
+#     # panel.grid = element_blank()
+#   ) 
+# ggsave(file = paste("cytof_bulk_per_sample_IGH", ".pdf", sep = ""),
+#        width = 3, height = 3, dpi = 300)
+# dev.off()
+# 
+# # Mono
+# ggplot() +
+#   geom_point(
+#     data = bulk_meta_mono,
+#     mapping = aes_string(x = "CCR2_gene", y = "cytof_ave_mean"),
+#     size = 3, stroke = 0.2, shape = 20, color = "#DE77AE"
+#   ) +
+#   # scale_fill_manual(values = meta_colors$disease, name = "") +
+#   labs(
+#     x = "Bulk RNA-seq expression",
+#     y = "Averaged mass cytometry \n proteomic expression",
+#     title = "Monocyte samples\nCCR2"
+#   ) +
+#   theme_classic(base_size = 14) +
+#   theme(
+#     legend.position = "none"
+#     # axis.text = element_blank()
+#     # axis.ticks = element_blank()
+#     # panel.grid = element_blank()
+#   ) 
+# ggsave(file = paste("cytof_bulk_per_sample_CCR2", ".pdf", sep = ""),
+#        width = 3, height = 3, dpi = 300)
+# dev.off()
+# 
+# 
+# # T cell
+# ggplot() +
+#   geom_point(
+#     data = bulk_meta_tcell,
+#     mapping = aes_string(x = "PDCD1_gene", y = "cytof_ave_mean"),
+#     size = 3, stroke = 0.2, shape = 20, color = "#A65628"
+#   ) +
+#   # scale_fill_manual(values = meta_colors$disease, name = "") +
+#   labs(
+#     x = "Bulk RNA-seq expression",
+#     y = "Averaged mass cytometry \n proteomic expression",
+#     title = "T cell samples\nPD1"
+#   ) +
+#   theme_classic(base_size = 14) +
+#   theme(
+#     legend.position = "none"
+#     # axis.text = element_blank()
+#     # axis.ticks = element_blank()
+#     # panel.grid = element_blank()
+#   ) 
+# ggsave(file = paste("cytof_bulk_per_sample_PDCD1", ".pdf", sep = ""),
+#        width = 3.2, height = 3, dpi = 300)
+# dev.off()
 
 
 # ----------------------------
