@@ -13,18 +13,17 @@ library(ggplot2)
 
 
 # Read post-QC single-cell RNA-seq meta data
-meta <- readRDS("../data/celseq_synovium_meta_5452cells_paper.rds")
+meta <- readRDS("../data/celseq_synovium_meta_5265cells_paper.rds")
 meta <- meta[order(meta$cell_name),]
 meta$cell_name <- as.character(meta$cell_name)
-meta <- meta[-which(meta$fine_cluster == "T-1"),]
 dim(meta)
 
-mat <- meta[, c("sample", "disease", "plate", "fine_cluster", "type")]
+mat <- meta[, c("sample", "disease", "plate", "cluster", "cell_type")]
 non_samples <- names(which(table(mat$sample) == 0))
 
-dat <- table(mat$fine_cluster, mat$sample) 
+dat <- table(mat$cluster, mat$sample) 
 dat <- as.data.frame(dat)
-colnames(dat) <- c("fine_cluster", "sample", "freq")
+colnames(dat) <- c("cluster", "sample", "freq")
 dat <- dat[-which(dat$sample %in% non_samples),]
 dat$sample <- as.character(dat$sample)
 table(dat$sample)
@@ -33,12 +32,12 @@ dim(dat)
 # Read Case.Control labels for OA, non-inflamed RA, and RA
 inflam_label <- read.xls("../data/postQC_all_samples.xlsx")
 inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "inflamed RA"
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "non-inflamed RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "leukocyte-rich RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "leukocyte-poor RA"
 
 table(inflam_label$Mahalanobis_20)
 inflam_label <- inflam_label[which(inflam_label$Patient %in% dat$sample), ]
-inflam_label <- inflam_label[, c("Patient", "Disease", "Tissue.type", "lym_25")]
+inflam_label <- inflam_label[, c("Patient", "Disease", "Tissue.type", "Mahalanobis_20")]
 colnames(inflam_label)[1] <- "sample"
 plot_final <- merge(dat, inflam_label, by = "sample")
 dim(plot_final)
@@ -46,43 +45,41 @@ plot_final[1:4,]
 
 # Add cell type column
 type <- rep("Fibroblast", nrow(plot_final))
-type[grep("B-", plot_final$fine_cluster)] <- "B cell"
-type[grep("T-", plot_final$fine_cluster)] <- "T cell"
-type[grep("M-", plot_final$fine_cluster)] <- "Monocyte"
+type[grep("SC-B", plot_final$cluster)] <- "B cell"
+type[grep("SC-T", plot_final$cluster)] <- "T cell"
+type[grep("SC-M", plot_final$cluster)] <- "Monocyte"
 plot_final$type <- type
 
-plot_final$lym_25_order = factor(plot_final$lym_25, levels=c('OA','non-inflamed RA','inflamed RA'))
+plot_final$Mahalanobis_20 = factor(plot_final$Mahalanobis_20, levels=c('OA','leukocyte-poor RA','leukocyte-rich RA'))
 plot_final$type_order = factor(plot_final$type, levels=c('Fibroblast','Monocyte', 'T cell','B cell'))
 
-# saveRDS(plot_final, "barplot_sc_cluster_per_patient.rds")
-# plot_final <- readRDS("../data/barplot_sc_cluster_per_patient.rds")
-  
 # Plot cells from all single-cell RNA-seq clusters for each patient
 ggplot(
   data=plot_final,
-  aes(x=reorder(sample, freq), y= freq, fill = fine_cluster)
+  aes(x=reorder(sample, freq), y= freq, fill = cluster)
   ) +
   geom_bar(stat="identity",
-           # position = "fill"
-           position = "stack",
+           position = "fill",
+           # position = "stack",
            width = 0.85
            ) +
-  facet_grid(type_order ~ lym_25_order, scales = "free", space = "free_x") +
+  scale_y_continuous(labels = scales::percent) +
+  facet_grid(type_order ~ Mahalanobis_20, scales = "free", space = "free_x") +
   scale_fill_manual("", values = meta_colors$fine_cluster) +
   labs(
     x = "Donors",
-    # y = "Proportion of all clusters"
-    y = "Number of cells"
+    y = "Proportion of clusters per cell type"
+    # y = "Number of cells"
   ) +
-  theme_bw(base_size = 12) +
+  theme_bw(base_size = 15) +
   theme(    
         legend.position="none",
         # axis.ticks = element_blank(), 
         panel.grid = element_blank(),
-        axis.text = element_text(size = 12),
+        axis.text = element_text(size = 15),
         axis.text.x=element_text(angle=30, hjust=1),
-        axis.text.y = element_text(size = 12))
-ggsave(file = paste("barplot_sc_cluster_per_patient_goodcells", ".pdf", sep = ""),
+        axis.text.y = element_text(size = 15))
+ggsave(file = paste("barplot_sc_cluster_per_patient_percent", ".pdf", sep = ""),
        width = 7, height = 6, dpi = 100)
 dev.off()
 

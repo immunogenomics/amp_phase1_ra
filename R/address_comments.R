@@ -2,7 +2,7 @@
 # Fan Zhang
 # 2018-08-14
 
-setwd("Documents/GitHub/amp_phase1_ra/")
+setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/")
 
 library(dplyr)
 library(ggplot2)
@@ -17,6 +17,7 @@ library(pheatmap)
 library(RColorBrewer)
 library(ggrepel)
 library(cetcolor)
+library(gridExtra)
 source("../amp_phase1_ra_viewer/R/install-packages.R")
 source("R/meta_colors.R")
 
@@ -36,6 +37,10 @@ all(colnames(log2cpm) == meta$cell_name)
 log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
 bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
 all(colnames(log2tpm) == bulk_meta$Sample.ID)
+# Change HLA.DRA to HLA-DRA
+temp <- rownames(log2tpm)[grep("HLA.", rownames(log2tpm))]
+rownames(log2tpm)[grep("HLA.", rownames(log2tpm))] <- gsub(".", "-", temp, fixed = TRUE)
+
 
 # correct mislabeled samples
 # bulk_meta$Cell.type[which(bulk_meta$Sample.ID == "S163")] <- "B cell"
@@ -227,114 +232,122 @@ dev.off()
 
 
 # ------------------------------------------------------------------------------------------------------------------------
-# Reviewer 1 comment 1 (Option 2) Percent of fibroblasts have >0 marker; ignore clusters
+# Reviewer 1 comment 1 (Option 2: much better correlation) Percent (%) of fibroblasts have >0 marker; ignore clusters
 # ------------------------------------------------------------------------------------------------------------------------
-# For each cell type data
-# scRNA-seq
-# "Fibroblast", "Monocyte", "T cell", "B cell"
+# For each cell type single-cell RNA-seq data:
+# Generate all the subplots all at once
+# "Fibroblast", "Monocyte", "B cell", "T cell"
 type <- "T cell"
-log2cpm_fibro <- log2cpm[, which(meta$cell_type == type)]
-meta_fibro <- meta[which(meta$cell_type == type),]
-all(colnames(log2cpm_fibro) == meta_fibro$cell_name)
 
 # Two marker genes per cluster
-gene <- "HLA-DRB1"
-meta_fibro$gene <- as.numeric(log2cpm_fibro[which(rownames(log2cpm_fibro) == gene),])
-dat_percent <- meta_fibro %>%
-  dplyr::group_by(sample) %>%
-  dplyr::summarise(percent = sum(gene > 0) / length(gene) * 100,
-                   ave_mean = mean(gene),
-                   ave_median = median(gene))
-dat_percent <- as.data.frame(dat_percent)
-dat_percent <- dat_percent[order(dat_percent$sample),]
+# markers <- c("HLA-DRA", "IFI30", "PTGFR", "CD34", "DKK3", "COL8A2", "CLIC5", "HBEGF")
+# markers <- c("NR4A2", "ATF3", "NUPR1", "HTRA1", "CD14", "MARCO", "IFI6", "IFITM3")
+# markers <- c("IGHM", "CXCR4", "HLA-DRA", "IGHG3", "ITGAX", "ZEB2", "MZB1", "XBP1")
+markers <- c("CCR7", "SELL", "FOXP3", "TIGIT", "CXCL13", "PDCD1", "GZMK", "NKG7", "GZMB", "PRF1", "HLA-DQA1", "HLA-DRB1")
 
+log2cpm_type <- log2cpm[, which(meta$cell_type == type)]
+meta_type <- meta[which(meta$cell_type == type),]
+all(colnames(log2cpm_type) == meta_type$cell_name)
 
-# Load bulk data
-log2tpm <- readRDS("data/filtered_log2tpm_lowinput_phase_1.rds")
-bulk_meta <- readRDS("data/filtered_meta_lowinput_phase_1.rds")
-all(colnames(log2tpm) == bulk_meta$Sample.ID)
-log2tpm_fibro <- log2tpm[, which(bulk_meta$Cell.type == type)]
-bulk_meta_fibro <- bulk_meta[which(bulk_meta$Cell.type == type),]
-all(colnames(log2tpm_fibro) == bulk_meta_fibro$cell_name)
-gene <- "HLA.DRB1"
-bulk_meta_fibro$gene_bulk <- as.numeric(log2tpm_fibro[which(rownames(log2tpm_fibro) == gene),]) 
+log2tpm_type <- log2tpm[, which(bulk_meta$Cell.type == type)]
+bulk_meta_type <- bulk_meta[which(bulk_meta$Cell.type == type),]
+all(colnames(log2tpm_type) == bulk_meta_type$cell_name)
 
-# Intersect
-inter <- intersect(meta_fibro$sample, bulk_meta_fibro$Donor.ID)
-meta_1 <- dat_percent[which(dat_percent$sample %in% inter),]
-meta_2 <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
-meta_1$sample <- as.character(meta_1$sample)
-meta_1 <- meta_1[ order(match(meta_1$sample, meta_2$Donor.ID)), ]
-all(meta_1$sample == meta_2$Donor.ID)
-meta_1$gene_bulk <- meta_2$gene_bulk
+myplots <- list()
+for (i in 1:length(markers)) {
+  gene <- markers[i]
+  meta_type$gene <- as.numeric(log2cpm_type[which(rownames(log2cpm_type) == gene),])
+  dat_percent <- meta_type %>%
+    dplyr::group_by(sample) %>%
+    dplyr::summarise(percent = sum(gene > 0) / length(gene),
+                     ave_mean = mean(gene),
+                     ave_median = median(gene))
+  dat_percent <- as.data.frame(dat_percent)
+  dat_percent <- dat_percent[order(dat_percent$sample),]
 
-# Add manhalonobis labels 
-inflam_label <- read.xls("data/postQC_all_samples.xlsx")
-inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
-inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
-inflam_label <- inflam_label[which(inflam_label$Patient %in% meta_1$sample),]
-inflam_label$Patient <- as.character(inflam_label$Patient)
-meta_1 <- meta_1[ order(match(meta_1$sample, inflam_label$Patient)), ]
-all(meta_1$sample == inflam_label$Patient)
-meta_1$Mahalanobis <- inflam_label$Mahalanobis_20
-scaleFUN <- function(x) sprintf("%.1f", x)
-
-fit <- lm(gene_bulk ~ percent, data = meta_1)
-# summary(fit)
-# summary(fit)$adj.r.squared
-# summary(fit)$r.squared
-# summary(fit)$coefficients[2,"Pr(>|t|)"]
-fit$model$Mahalanobis <- meta_1$Mahalanobis
-p42 <- ggplot(
-  fit$model,
-  aes(
-    x=gene_bulk,
-    y=percent,
-    fill = Mahalanobis
+  bulk_meta_type$gene_bulk <- as.numeric(log2tpm_type[which(rownames(log2tpm_type) == gene),]) 
+  
+  # Intersect
+  inter <- intersect(meta_type$sample, bulk_meta_type$Donor.ID)
+  meta_1 <- dat_percent[which(dat_percent$sample %in% inter),]
+  meta_2 <- bulk_meta_type[which(bulk_meta_type$Donor.ID %in% inter),]
+  meta_1$sample <- as.character(meta_1$sample)
+  meta_1 <- meta_1[ order(match(meta_1$sample, meta_2$Donor.ID)), ]
+  all(meta_1$sample == meta_2$Donor.ID)
+  meta_1$gene_bulk <- meta_2$gene_bulk
+  
+  # Add manhalonobis labels 
+  inflam_label <- read.xls("data/postQC_all_samples.xlsx")
+  inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+  inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+  inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+  inflam_label <- inflam_label[which(inflam_label$Patient %in% meta_1$sample),]
+  inflam_label$Patient <- as.character(inflam_label$Patient)
+  meta_1 <- meta_1[ order(match(meta_1$sample, inflam_label$Patient)), ]
+  all(meta_1$sample == inflam_label$Patient)
+  meta_1$Mahalanobis <- inflam_label$Mahalanobis_20
+  scaleFUN <- function(x) sprintf("%.0f", x)
+  
+  # Linear regression
+  fit <- lm(gene_bulk ~ percent, data = meta_1)
+  fit$model$Mahalanobis <- meta_1$Mahalanobis
+  lm_eqn <- function(fit){
+    eq <- substitute(# italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2, 
+      ~~italic(r)^2~"="~r2*","~~italic(p)~"="~pvalue,
+      list(
+        # a = format(coef(m)[1], digits = 2), 
+        # b = format(coef(m)[2], digits = 2), 
+        r2 = format(summary(fit)$r.squared, digits = 2),
+        pvalue = format(summary(fit)$coefficients[2,'Pr(>|t|)'], digits=1)
+      )
     )
-  ) +
-  geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
-              size = 1.5, linetype="dashed",
-              col= "darkgrey", fill="lightgrey") +
-  geom_point(
-    shape=21, size = 4.5, stroke = 0.35
-  ) +
-  scale_fill_manual(values = meta_colors$Case.Control) +
-  labs(
-    x = "",
-    y = "",
-    title = gene
-    # x = "Bulk RNA-seq expression",
-    # y = "Percent of non-zero expressing cells",
-    # title = paste0(gene, " in ", type)
-  ) +
-  scale_x_continuous(labels=scaleFUN) + 
-  theme_bw(base_size = 25) +
-  theme(
-    legend.position = "none",
-    # axis.text = element_blank(),
-    # axis.ticks = element_blank(),
-    panel.grid = element_blank(),
-    plot.title = element_text(color="black", size=25)
-  ) 
+    as.character(as.expression(eq));                 
+  }
+  ind <- paste("p", i, sep = "")
+  ind <- ggplot(
+    fit$model,
+    aes(
+      x=gene_bulk,
+      y=percent,
+      fill = Mahalanobis
+      )
+    ) +
+    geom_smooth(aes(group = 1), method = "lm", formula = y ~ x, 
+                size = 0.7, linetype="dashed",
+                col= "black", fill="lightgrey") +
+    geom_point(
+      shape=21, size = 5, stroke = 0.1
+    ) +
+    geom_text(x = -Inf, y = Inf, hjust = 0, vjust = 1.8, # display the text on the top left; for fibroblast: vjust = 1.8
+              label=lm_eqn(fit), 
+              color='black', fontface="plain", size=7, parse=T) +
+    scale_fill_manual(values = meta_colors$Case.Control) +
+    labs(
+      x = NULL,
+      y = NULL,
+      title = gene
+      # x = "Bulk RNA-seq expression",
+      # y = "Percent of non-zero expressing cells",
+      # title = paste0(gene, " in ", type)
+    ) +
+    scale_x_continuous(labels=scaleFUN) +
+    # scale_x_continuous(breaks= pretty_breaks()) + # display integer values in axis
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+    theme_classic(base_size = 30) +
+    theme(
+      legend.position = "none",
+      # axis.text = element_blank(),
+      # axis.ticks = element_blank(),
+      panel.grid = element_blank(),
+      plot.title = element_text(color="black", size=25)
+    ) 
+  myplots[[i]] <- ind
+}
 
-
-pf <- grid.arrange(p1, p2, p3, p4, p5, p6, p7, p8, ncol = 4, nrow = 2)
-ggsave(file = paste("bulk_perc_fibro_option2", ".pdf", sep = ""), pf,
-       width = 15.5, height = 8, dpi = 300)
-
-pm <- grid.arrange(p11, p12, p13, p14, p15, p16, p17, p18, ncol = 4, nrow = 2)
-ggsave(file = paste("bulk_perc_mono_option2", ".pdf", sep = ""), pm,
-       width = 15.5, height = 8, dpi = 300)
-
-pb <- grid.arrange(p21, p22, p23, p24, p25, p26, p27, p28, ncol = 4, nrow = 2)
-ggsave(file = paste("bulk_perc_bcell_option2", ".pdf", sep = ""), pb,
-       width = 15.5, height = 8, dpi = 300)
-
-pt <- grid.arrange(p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41, p42, ncol = 4, nrow = 3)
-ggsave(file = paste("bulk_perc_tcell_option2", ".pdf", sep = ""), pt,
-       width = 15.5, height = 12, dpi = 300)
+all <- do.call("grid.arrange", c(myplots, ncol = 6))
+ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 27, height = 9, dpi = 300)
+# ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 16, height = 8, dpi = 300)
+dev.off()
 
 
 # ----------------------------
