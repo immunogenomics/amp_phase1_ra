@@ -99,7 +99,6 @@ inflam_label$Patient <- as.character(inflam_label$Patient)
 table(inflam_label$Mahalanobis_20)
 inter <- intersect(bulk_meta_fibro$Donor.ID, inflam_label$Patient)
 
-
 bulk_meta_fibro <- bulk_meta_fibro[which(bulk_meta_fibro$Donor.ID %in% inter),]
 inflam_label <- inflam_label[which(inflam_label$Patient %in% inter),]
 bulk_meta_fibro <- bulk_meta_fibro[order(match(bulk_meta_fibro$Donor.ID, inflam_label$sample)), ]
@@ -237,13 +236,13 @@ dev.off()
 # For each cell type single-cell RNA-seq data:
 # Generate all the subplots all at once
 # "Fibroblast", "Monocyte", "B cell", "T cell"
-type <- "T cell"
+type <- "Monocyte"
 
 # Two marker genes per cluster
 # markers <- c("HLA-DRA", "IFI30", "PTGFR", "CD34", "DKK3", "COL8A2", "CLIC5", "HBEGF")
-# markers <- c("NR4A2", "ATF3", "NUPR1", "HTRA1", "CD14", "MARCO", "IFI6", "IFITM3")
+markers <- c("NR4A2", "ATF3", "NUPR1", "HTRA1", "CD14", "MARCO", "IFI6", "IFITM3")
 # markers <- c("IGHM", "CXCR4", "HLA-DRA", "IGHG3", "ITGAX", "ZEB2", "MZB1", "XBP1")
-markers <- c("CCR7", "SELL", "FOXP3", "TIGIT", "CXCL13", "PDCD1", "GZMK", "NKG7", "GZMB", "PRF1", "HLA-DQA1", "HLA-DRB1")
+# markers <- c("CCR7", "SELL", "FOXP3", "TIGIT", "CXCL13", "PDCD1", "GZMK", "NKG7", "GZMB", "PRF1", "HLA-DQA1", "HLA-DRB1")
 
 log2cpm_type <- log2cpm[, which(meta$cell_type == type)]
 meta_type <- meta[which(meta$cell_type == type),]
@@ -339,14 +338,14 @@ for (i in 1:length(markers)) {
       # axis.text = element_blank(),
       # axis.ticks = element_blank(),
       panel.grid = element_blank(),
-      plot.title = element_text(color="black", size=25)
+      plot.title = element_text(color="black", size=27)
     ) 
   myplots[[i]] <- ind
 }
 
-all <- do.call("grid.arrange", c(myplots, ncol = 6))
-ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 27, height = 9, dpi = 300)
-# ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 16, height = 8, dpi = 300)
+all <- do.call("grid.arrange", c(myplots, ncol = 4))
+# ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 27, height = 9, dpi = 300)
+ggsave(file = paste("bulk_percSC_", type, ".pdf", sep = ""), all, width = 18, height = 9, dpi = 300)
 dev.off()
 
 
@@ -384,7 +383,7 @@ fan_genes <- c("IL7R", "CD4", "SELL","CD40LG", "AQP3", "ANK3", "TCF7",  "CCR7", 
                "CXCL13", "PDCD1", "CD200",  # "MAF", "CXCR5",
                "GZMA", "CCL5", "CCL4", "CD8A", "NKG7", "CST7", "SLAMF7", "CRTAM", "GZMK",
                "GNLY", "FGFBP2", "CX3CR1", "TGFBR3", "GZMB", "ZNF683", "SPON2", "PRF1",
-               # TpH are cells: PDCD1+, CXCL13+, ICOS+, CXCR5-
+               # Tph are cells: PDCD1+, CXCL13+, ICOS+, CXCR5-
                "HLA-DQA1", "HLA-DRB5", "HLA-DRA", "APOBEC3G")
 
 exp <- log2cpm_tcell[fan_genes,]
@@ -468,6 +467,106 @@ pheatmap(
   scale = "none"
 )
 dev.off()
+
+
+# ---------------------------------------------
+# Update Fig 5a
+markers_4cluster <- read.xls("../../HMS/amp/results/2017_11_05_Run_knn_community_detection_on_cca_mono/markers_4clusters_mono.xlsx")
+markers_4cluster$gene <- as.character(markers_4cluster$gene)
+sc_genes <- c(markers_4cluster$gene[c(1:20, 25, 38)],
+               markers_4cluster$gene[101:120],
+               arkers_4cluster$gene[200:220],
+               markers_4cluster$gene[c(300:315,384)])
+
+log2cpm_mono <- log2cpm[, which(meta$cell_type == "Monocyte")]
+meta_mono <- meta[which(meta$cell_type == type),]
+all(colnames(log2cpm_mono) == meta_mono$cell_name)
+
+sc_exp <- log2cpm_mono[sc_genes,]
+dim(sc_exp)
+mat_breaks <- seq(min(sc_exp), max(sc_exp), length.out = 10)
+quantile_breaks <- function(xs, n = 10) {
+  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+  breaks[!duplicated(breaks)]
+}
+mat_breaks <- quantile_breaks(sc_exp, n = 11)
+
+annotation_col <- meta_mono[, c("plate", "Mahalanobis_20", "cluster")]
+colnames(annotation_col)[3] <- "fine_cluster"
+colnames(annotation_col)[2] <- "disease"
+rownames(annotation_col) <- meta_mono$cell_name
+rownames(meta_mono) <- meta_mono$cell_name
+sc_exp <- sc_exp[,order(annotation_col$fine_cluster)]
+scale_rows <- function(x) t(scale(t(x)))
+sc_exp <- scale_rows(sc_exp) # Z-score
+sc_exp[sc_exp > 2] <- 2
+sc_exp[sc_exp < -2] <- -2
+
+pdf("heatmap_markers_mono.pdf", width=8, height=4, onefile = FALSE, bg = "white")
+pheatmap(
+  mat = sc_exp,
+  border_color = NA,
+  color = colorRampPalette(rev(brewer.pal(n = 8, name = "RdYlBu")))(6),
+  show_rownames = TRUE,
+  show_colnames = FALSE,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_col = annotation_col,
+  annotation_colors = meta_colors,
+  fontsize = 10,
+  fontsize_row = 7,
+  scale = "none"
+)
+dev.off()
+
+# ---------------------------------------------
+# Update Fig 7a
+sc_genes <- c("IGHD", "CXCR4", "IL6", "IGHM", "CD83", "BACH2", "KDM6B", "NR4A2", "CD69",
+              "CD74", "HLA-DPB1", "MS4A1", "HLA-DRA", "HLA-DRB1", "SELL",
+              "ITGAX", "ZEB2", "ACTB", "CD52", "TBX21", "IFI44L", "OAS3", "GBP1", "ISG15", # "RSAD2", "IFIT1",
+              "SSR4", "MZB1", "FKBP11", "XBP1", "DERL3", "SLAMF7", "CD27")
+
+log2cpm_bcell <- log2cpm[, which(meta$cell_type == "B cell")]
+meta_bcell <- meta[which(meta$cell_type == "B cell"),]
+all(colnames(log2cpm_bcell) == meta_bcell$cell_name)
+
+sc_exp <- log2cpm_bcell[sc_genes,]
+dim(sc_exp)
+mat_breaks <- seq(min(sc_exp), max(sc_exp), length.out = 10)
+quantile_breaks <- function(xs, n = 10) {
+  breaks <- quantile(xs, probs = seq(0, 1, length.out = n))
+  breaks[!duplicated(breaks)]
+}
+mat_breaks <- quantile_breaks(sc_exp, n = 11)
+
+annotation_col <- meta_bcell[, c("plate", "Mahalanobis_20", "cluster")]
+colnames(annotation_col)[3] <- "fine_cluster"
+colnames(annotation_col)[2] <- "disease"
+rownames(annotation_col) <- meta_bcell$cell_name
+rownames(meta_bcell) <- meta_bcell$cell_name
+sc_exp <- sc_exp[,order(annotation_col$fine_cluster)]
+scale_rows <- function(x) t(scale(t(x)))
+sc_exp <- scale_rows(sc_exp) # Z-score
+sc_exp[sc_exp > 2] <- 2
+sc_exp[sc_exp < -2] <- -2
+
+pdf("heatmap_markers_bcell.pdf", width=6, height=3, onefile = FALSE, bg = "white")
+pheatmap(
+  mat = sc_exp,
+  border_color = NA,
+  color = colorRampPalette(rev(brewer.pal(n = 9, name = "RdYlBu")))(8),
+  show_rownames = TRUE,
+  show_colnames = FALSE,
+  cluster_rows = FALSE,
+  cluster_cols = FALSE,
+  annotation_col = annotation_col,
+  annotation_colors = meta_colors,
+  fontsize = 7,
+  fontsize_row = 7,
+  scale = "none"
+)
+dev.off()
+
 
 # ------------------------------------
 # Both sc + bulk heatmap: not good, less columns for bulk data
@@ -1566,3 +1665,207 @@ ggplot() +
 ggsave(file = paste("protein_", protein, ".png", sep = ""),
        width = 3.5, height = 3, dpi = 300)
 dev.off()
+
+# --------------------------------------------
+# Reviewer 2 Comment 5.1 
+# Calculate entropy or KL-divergence in R 
+meta$sample <- as.character(meta$sample)
+table(meta$sample)
+table(meta$cluster)
+
+library(factoextra)
+library(cluster)
+
+file_mean_sd <- "celseq_synovium_log2cpm_mean_sd.rds"
+if (!file.exists(file_mean_sd)) {
+  # dat_mean_sd <- data.frame(
+  #   mean  = Matrix::rowMeans(dat),
+  #   sd    = apply(dat, 1, sd),
+  #   count = apply(dat, 1, function(x) sum(x > 0))
+  # )
+  dat_mean_sd <- data.frame(
+    mean  = Matrix::rowMeans(log2cpm_fibro),
+    sd    = apply(log2cpm_fibro, 1, sd),
+    count = apply(log2cpm_fibro, 1, function(x) sum(x > 0))
+  )
+  xs <- dat_mean_sd$mean
+  xs[xs == 0] <- 1
+  dat_mean_sd$cv <- dat_mean_sd$sd / xs
+  rm(xs)
+  dat_mean_sd$density_cv <- with(dat_mean_sd, get_density(mean, cv))
+  dat_mean_sd$density_sd <- with(dat_mean_sd, get_density(mean, sd))
+  saveRDS(dat_mean_sd, file_mean_sd)
+} else {
+  dat_mean_sd <- readRDS(file_mean_sd)
+}
+
+top_percent <- 0.9
+mat_idx <- with(
+  dat_mean_sd,
+  mean > quantile(mean, top_percent) &
+    sd > quantile(sd, top_percent)
+)
+
+test <- log2cpm_fibro[mat_idx,]
+dim(test)
+
+dat_dist <- dist(as.matrix(t(test)))
+dat_dist <- as.matrix(dat_dist)
+dim(dat_dist)
+# per = 50
+# tsne1 <- Rtsne(
+#   X = log2cpm_fibro,
+#   is_distance = TRUE,
+#   dims = 2,
+#   perplexity = per,
+#   theta = 0.5,
+#   pca = TRUE
+# )
+
+meta_fibro$clus_num <- substring(meta_fibro$cluster, 5)
+sil = silhouette(x = as.numeric(meta_fibro$clus_num), dmatrix = 1-dat_dist^2)
+plot(sil,
+     col = meta_colors$fine_cluster, 
+     xlab = "Silhouette width",
+     ylab = "Cells",
+     main = "Silhouette plot of fibroblast clusters and \ncell-to-cell similarity matrix",
+     cex.lab = 1,
+     cex = 1,
+     cex.axis = 1
+)
+
+
+# # https://github.com/MarioniLab/MNN2017/blob/master/SomeFuncs/BatchMixingEntropy.R
+# BatchEntropy <- function(dataset, batch0, L=100, M=100, k=500) {
+#   # entropy of batch mixing
+#   # L is the number bootstrapping times
+#   # M is the number of randomly picked cells    
+#   # k is the number of nearest neighbours of cell (from all batches) to check   
+#   
+#   require(RANN)  
+#   nbatches<-length(unique(batch0))
+#   
+#   entropy<-matrix(0,L,1)
+#   set.seed(0) 
+#   for (boot in 1:L) {
+#     bootsamples<-sample(1:nrow(dataset),M)
+#     W21<-nn2(dataset,query=dataset[bootsamples,],k)
+#     
+#     for (i in 1:length(bootsamples)){
+#       
+#       for (j in 1:nbatches) {
+#         xi<-max(1,sum(batch0[W21$nn.idx[i,]]==j))
+#         entropy[boot]<-entropy[boot]+xi*log(xi)
+#       }
+#     }
+#   }
+#   
+#   return( (-1)*entropy/length(bootsamples) )
+# }
+# 
+# en <- BatchEntropy(meta[, c("T1_all", "T2_all")], meta$sample, L=100, M=100, k=500)
+# boxplot(en)
+
+find_entropy <- function(donor_list) {
+  entropies <- c()
+  for (i in 1:length(donor_list)) {
+    donor <- donor_list[[i]]
+    distributions <- c()
+    entropy_i <- c()
+    # d <- length(table(donor$cell_type))
+    # for (j in 1:length(table(donor$cell_type))) {
+    #   distributions[j] <- (table(donor$cell_type)[j])/(sum(table(donor$cell_type)))
+    #   entropy_i[j] <- distributions[j]*log(distributions[j], d)
+    # } 
+    d <- length(table(donor$cluster))
+    for (j in 1:length(table(donor$cluster))) {
+      distributions[j] <- (table(donor$cluster)[j])/(sum(table(donor$cluster)))
+      entropy_i[j] <- distributions[j]*log(distributions[j], d)
+    } 
+    entropy <- -sum(entropy_i)
+    entropies[i] <- entropy
+  }
+  entropies
+}
+meta$sample <- as.character(meta$sample)
+meta$cell_type <- as.character(meta$cell_type)
+meta$cluster <- as.character(meta$cluster)
+  
+# Plot entropy of 21 donors based CCA results
+donors <- list()
+for (i in 1:length(table(meta$sample))){
+  donor_name <- names(table(meta$sample))[i]
+  donor_name <- meta[meta$sample == donor_name, ]
+  donors[[i]] <- donor_name
+}
+entropies <- find_entropy(donors)
+
+plot_entropy = data.frame(
+  donor =names(table(meta$sample)),
+  entropy = entropies
+)
+ggplot(
+  data=plot_entropy,
+  aes(x=donor, y= entropy)
+  ) +
+  geom_bar(stat="identity",
+           position = "stack",
+           width = 0.7
+  ) +
+  # scale_fill_manual("", values = meta_colors$sample) +
+  labs(
+    x = "donors",
+    y = "Entropy"
+  ) +
+  theme_classic(base_size = 20) +
+  theme(    
+    # legend.position="none",
+    # axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 15),
+    axis.text.x=element_text(angle=30, hjust=1),
+    axis.text.y = element_text(size = 20)
+  )
+ggsave(file = paste("sc_cluster_donor_entropy", ".pdf", sep = ""), width = 9, height = 5, dpi = 300)
+dev.off()
+
+# # # Plot entropy of 21 donors based PCA results
+# donors_seurat <- list()
+# for (i in 1:length(table(meta_seurat$donor))){
+#   donor_name <- names(table(meta_seurat$donor))[i]
+#   donor_name <- meta_seurat[meta_seurat$donor == donor_name, ]
+#   donors_seurat[[i]] <- donor_name
+# }
+# seurat_entropies <- find_entropy(donors_seurat)
+# barplot(seurat_entropies)
+
+
+# Chamith's function on KL divergence
+calcKL <- function(dataset, clusterCol, clusterName, markers, binSize = 100) {
+  message(paste("Ranking markers for cluster", clusterName))
+  divergence <- rep(NA, length(markers))
+  names(divergence) <- markers
+  for (i in seq_along(markers)) {
+    stain <- markers[i]
+    q <- dataset[, stain]
+    p <- dataset[dataset[[clusterCol]] == clusterName, stain]
+    # Create 100 evenly spaced bins from 0 to maximum value observed for stain
+    bins <- seq(0, max(q, p), length.out = binSize)
+    # Create vectors of counts at each bin for p and q
+    q.counts <- hist(q, breaks = bins, include.lowest = T, plot = F)$counts
+    p.counts <- hist(p, breaks = bins, include.lowest = T, plot = F)$counts
+    # Normalize so counts sum to 1 (converting to probability vector)
+    q.probs <- q.counts/sum(q.counts)
+    p.probs <- p.counts/sum(p.counts)
+    # Calculate divergence for each bin, setting NaN to 0 and sum
+    divr <- p.probs * log(p.probs/q.probs)
+    divr[is.na(divr)] <- 0
+    divr <- sum(divr)
+    divergence[stain] <- divr
+  }
+  return(divergence)
+}
+
+
+  
+

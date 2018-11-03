@@ -631,8 +631,8 @@ dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-1),
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
 gene_order <- c("CD83", "CD38", "IL6", "IGHD", "IGHM", "BACH2", # SC-B1
                 "HLA.DPB1", "HLA.DRA", "MS4A1", # SC-B2
-                "ITGAX", "TBX21", "ZEB2", "ACTB", # SC-B3
-                "XBP1", "MZB1", "FKBP11", "SSR4", "DERL3" # SC-B4
+                "ITGAX", "TBX21", "ZEB2", "ACTB", "AICDA", "IFI44L", "GBP1", "ISG15", # SC-B3
+                "XBP1", "MZB1", "CD27", "SSR4", "DERL3" # SC-B4
 )
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% gene_order),]
 
@@ -644,7 +644,7 @@ dat_plot$CI.R <- dat_plot$CI.R * (-1)
 
 # Use the same order with the single-cell genes order
 dat_plot <- dat_plot[match(gene_order, dat_plot$gene),]
-dat_plot$cluster <- c(rep("SC-B1", 6), rep("SC-B2", 3), rep("SC-B3", 4), rep("SC-B4", 5))
+dat_plot$cluster <- c(rep("SC-B1", 6), rep("SC-B2", 3), rep("SC-B3", 8), rep("SC-B4", 5))
 
 # Change HLA.DRA to HLA-DRA
 dat_plot[which(dat_plot$gene == "HLA.DRA"),]$gene <- "HLA-DRA"
@@ -669,7 +669,7 @@ ggplot() +
              # mapping=aes(x=gene, y= logFC, color = up_down),
              size = 3
   ) +
-  facet_grid(cluster ~ ., scales = "free", space = "free_x") +
+  facet_grid(cluster ~ ., scales = "free", space = "free_x", shrink = TRUE) +
   scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
   geom_hline(yintercept = 0, size = 0.3) +
   scale_x_discrete(position = "bottom") +
@@ -690,7 +690,7 @@ ggplot() +
     # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
 # dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
-dev.print("bcell_sc_markers_in_bulk.pdf", width = 5, height = 7.5, dev = pdf)
+dev.print("bcell_sc_markers_in_bulk.pdf", width = 5, height = 9.2, dev = pdf)
 dev.off()
 
 
