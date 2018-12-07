@@ -1,17 +1,12 @@
-# AMP Phase 1 RA
-
-Accelerating Medicines Partnership Phase 1 Rheumatoid Arthritis
-
-This repo has the code we used to analyze data and make figures in the
-published manuscript. 
+# Accelerating Medicines Partnership Phase 1 Rheumatoid Arthritis (RA)
 
 The preprint version can be viewed:
 
-> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., Kelly, S., Goodman, S.M., Tabechian, D., Hughes, L.B., Salomon-Escoto, K. and Watts, G.F., 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130.
+> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130.
 
 ## Overview
 
-The files in the repo are organized as follows:
+This repo has the code used to analyze data and make figures in the published manuscript. The files in the repo are organized as follows:
 
     .
     ├── R
@@ -20,6 +15,15 @@ The files in the repo are organized as follows:
 `R/` has code for analysis and creating figures.
 
 `data/` has Excel sheets with sample metadata and RData files with processed data ready for analysis.
+
+## Website 
+
+Feel free to use our websites to view the immune and stroma cell populations, and search your favorite genes:
+ 
+	1. Shiny app: https://immunogenomics.io/ampra/
+	2. UCSC Cell Browser: https://immunogenomics.io/cellbrowser/
+	3. Broad Institue Single Cell Portal: https://portals.broadinstitute.org/single_cell/study/amp-phase-1	
+
 
 ## Getting Started
 
