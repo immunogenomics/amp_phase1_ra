@@ -20,10 +20,17 @@ This repo has the code used to analyze data and make figures in the published ma
 
 Feel free to use our websites to view the immune and stroma cell populations, and search your favorite genes:
  
-	1. Shiny app: https://immunogenomics.io/ampra/
-	2. UCSC Cell Browser: https://immunogenomics.io/cellbrowser/
-	3. Broad Institue Single Cell Portal: https://portals.broadinstitute.org/single_cell/study/amp-phase-1	
+1. [Shiny app:](https://immunogenomics.io/ampra/)
+2. [UCSC Cell Browser:](https://immunogenomics.io/cellbrowser/)
+3. [Broad Institue Single Cell Portal:](https://portals.broadinstitute.org/single_cell/study/amp-phase-1)	
 
+## Data Availability
+
+The raw data of this study are available at:
+
+1. ImmPort (study accession code SDY998 and SDY999)
+2. dbGAP (study accession: phs001457.v1.p1). 
+3. Send [me](fanzhang@broadinstitute.org) an email if you have any quesiton and requests for data download.
 
 ## Getting Started
 
