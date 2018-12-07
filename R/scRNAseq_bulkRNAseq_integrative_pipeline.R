@@ -69,7 +69,7 @@ dim(dat)
 # sc_meta <- sc_meta[which(sc_meta$cell_name %in% rownames(all_fine)),]
 # all(colnames(dat) == sc_meta$cell_name)
 
-file_mean_sd <- "data/celseq_synovium_log2cpm_mean_sd.rds"
+file_mean_sd <- "../data/celseq_synovium_log2cpm_mean_sd_test.rds"
 if (!file.exists(file_mean_sd)) {
   dat_mean_sd <- data.frame(
     mean  = Matrix::rowMeans(dat),
@@ -86,7 +86,7 @@ if (!file.exists(file_mean_sd)) {
 } else {
   dat_mean_sd <- readRDS(file_mean_sd)
 }
-top_percent <- 0.8
+top_percent <- 0.7
 mat_idx <- with(
   dat_mean_sd,
   mean > quantile(mean, top_percent) &
@@ -180,7 +180,7 @@ cc_sc <- data.frame(
   cell_name = sc_meta$cell_name 
 )
 dim(cc_sc)
-all(cc_sc$cell_name == meta$cell_name)
+all(cc_sc$cell_name == sc_meta$cell_name)
 
 
 # -----------------------------------------------------------------

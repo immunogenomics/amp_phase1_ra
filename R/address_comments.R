@@ -1866,6 +1866,46 @@ calcKL <- function(dataset, clusterCol, clusterName, markers, binSize = 100) {
   return(divergence)
 }
 
+# ---
+# Update silhouette plot in the supplemental figure
+sil_fibro <- readRDS("/Users/fanzhang/Documents/HMS/amp/results/2017_10_18_Run_knn_community_detection_on_cca_results/fibro_silhouette_width_euclidean.rds")
+sil_mono <- readRDS("/Users/fanzhang/Documents/HMS/amp/results/2017_11_05_Run_knn_community_detection_on_cca_mono/mono_silhouette_width_euclidean.rds")
+sil_tcell <- readRDS("/Users/fanzhang/Documents/HMS/amp/results/2017_10_25_Run_knn_community_detection_on_cca_Tcell/tcell_silhouette_width_euclidean.rds")
+sil_bcell <- readRDS("/Users/fanzhang/Documents/HMS/amp/results/2017_11_05_Run_knn_community_detection_on_cca_bcell/bcell_silhouette_width_euclidean.rds")
+all <- rbind.data.frame(sil_fibro, sil_mono, sil_tcell, sil_bcell)
+
+all$cluster_name <- factor(all$cluster_name, 
+                           levels=rev(c("SC-F1", "SC-F2", "SC-F3", "SC-F4", "SC-M1", "SC-M2", "SC-M3", "SC-M4",
+                                    "SC-T1", "SC-T2", "SC-T3", "SC-T4", "SC-T5", "SC-T6", "SC-B1", "SC-B2", 
+                                    "SC-B3", "SC-B4"))
+                           )
+# all$cluster_numCells <- paste0(all$cluster_name, "(n=", all$cell, ")", sep="")
+
+ggplot(all, 
+       aes(y=sil_width, x= cluster_name, color=cluster_name)) + 
+  geom_boxplot() +
+  scale_color_manual(values = meta_colors$fine_cluster, name = "") +
+  geom_hline(yintercept=0, linetype = "dashed", color = "grey") + 
+  # coord_cartesian(ylim = c(-0.4, 0.8)) +
+  coord_flip(ylim = c(-0.2, 0.9)) +
+  # scale_x_discrete(position = "top") +
+  labs(
+    x = "",
+    y = "Silhouette width"
+  ) +
+  theme_bw(base_size = 30) +
+  theme(axis.ticks = element_blank(),
+        panel.grid = element_blank()
+  ) 
+ggsave(file = paste("silhouette_width_eucliDist_allClusters", ".pdf", sep = ""), 
+       width = 10, height = 10)
+dev.off()
+
+
+
+
+
+
 
   
 

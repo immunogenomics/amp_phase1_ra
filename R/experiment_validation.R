@@ -31,6 +31,8 @@ dat_1$cell_type <- as.character(dat_1$cell_type)
 dat_1$cell_type[which(dat_1$cell_type == "CD4")] <- "CD4 T cells"
 dat_1$cell_type[which(dat_1$cell_type == "CD8")] <- "CD8 T cells"
 
+t.test(dat_1$value[which(dat_1$cell_type == "CD8 T cells")], dat_1$value[which(dat_1$cell_type == "CD4 T cells")], alternative = "greater")
+
 ggplot(
   data = dat_1,
   aes(x = cell_type, y = value, group = group)
@@ -43,8 +45,10 @@ ggplot(
                      breaks = pretty_breaks()) +
   labs(
     x = "",
-    y = "Percent of IFNg+ cells",
-    title = "IFNg production \non synovial T cells"
+    y = expression(paste("Percent of IFN", gamma^"+", " cells")),
+    # title = bquote("IFN"~gamma~"production by \n synovial T cells")
+    title = expression(paste("IFN", gamma, " production")),
+    subtitle = "by synovial T cells"
   ) +
   theme_classic(base_size = 20) +
   theme(
@@ -56,7 +60,7 @@ ggplot(
     plot.title = element_text(color="black", size=20)
   ) 
 ggsave(file = paste("IFN", ".pdf", sep = ""),
-       width = 4, height = 5, dpi = 300)
+       width = 4, height = 6, dpi = 300)
 dev.off()
 
 
@@ -79,8 +83,9 @@ ggplot(
                      breaks = pretty_breaks()) +
   labs(
     x = "",
-    y = "Percent of TNF+ cells",
-    title = "TNF production \non synovial T cells"
+    y = expression(paste("Percent of ", "TNF"^"+", " cells")),
+    title = "TNF production",
+    subtitle = expression(paste("by synovial T cells"))
   ) +
   theme_classic(base_size = 20) +
   theme(
@@ -92,7 +97,7 @@ ggplot(
     plot.title = element_text(color="black", size=20)
   ) 
 ggsave(file = paste("TNF", ".pdf", sep = ""),
-       width = 4, height = 5, dpi = 300)
+       width = 4, height = 6, dpi = 300)
 dev.off()
 
 
@@ -109,20 +114,21 @@ ggplot(
   # geom_quasirandom(
   #   shape = 19, size = 3, stroke = 0.2
   # ) +
-  # stat_summary(
-  #   fun.y = median, fun.ymin = median, fun.ymax = median,
-  #   geom = "crossbar", width = 0.5
-  # ) +
-  geom_boxplot() +
+  stat_summary(
+    fun.y = median, fun.ymin = median, fun.ymax = median,
+    geom = "crossbar", width = 0.5
+  ) +
+  # geom_boxplot() +
   geom_point(
     aes(x = variable, y = value),
     size = 3, stroke = 0.2, shape = 19) +
-  scale_y_continuous(labels = scales::percent_format(accuracy = 1),
+    scale_y_continuous(labels = scales::percent_format(accuracy = 1),
                    breaks = pretty_breaks()) +
   labs(
     x = "",
-    y = "Percent among HLA-DR+ CD8 T cells",
-    title = "Granzyme expression on \nHLA-DR+ CD8 T cells"
+    y = expression(paste("Percent among HLA-", "DR"^"+", " CD8 T cells")),
+    title = "Granzyme expression by ",
+    subtitle = expression(paste("HLA-", "DR"^"+", " CD8 T cells"))
   ) +
   theme_classic(base_size = 18) +
   theme(
@@ -134,5 +140,5 @@ ggplot(
     plot.title = element_text(color="black", size=18)
   ) 
 ggsave(file = paste("Gzm", ".pdf", sep = ""),
-       width = 4, height = 5.5, dpi = 300)
+       width = 4, height = 6, dpi = 300)
 dev.off()

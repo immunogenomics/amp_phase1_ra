@@ -8,9 +8,19 @@
 setwd("/Users/fanzhang/Documents/GitHub/amp_phase1_ra/R/")
 
 load("../data/synData.Fibro.downsample.SNE.RData")
-load("../data/fanzhang/Documents/GitHub/amp_phase1_ra/data/synData.Bcell.downsample.SNE.RData")
-load("../data/fanzhang/Documents/GitHub/amp_phase1_ra/data/synData.Mono.downsample.SNE.RData")
-load("../data/fanzhang/Documents/GitHub/amp_phase1_ra/data/synData.Tcell.downsample.SNE.RData")
+load("../data/synData.Bcell.downsample.SNE.RData")
+load("../data/synData.Mono.downsample.SNE.RData")
+load("../data/synData.Tcell.downsample.SNE.RData")
+
+# 300-0486C, 300-0511A
+synData.Fibro.downsample$sampleID[which(synData.Fibro.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Fibro.downsample$sampleID[which(synData.Fibro.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Bcell.downsample$sampleID[which(synData.Bcell.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Bcell.downsample$sampleID[which(synData.Bcell.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Mono.downsample$sampleID[which(synData.Mono.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Mono.downsample$sampleID[which(synData.Mono.downsample$sampleID == "300-0511A")] <- "300-0511"
+synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0486C")] <- "300-0486"
+synData.Tcell.downsample$sampleID[which(synData.Tcell.downsample$sampleID == "300-0511A")] <- "300-0511"
 
 pacman::p_load(
   ggplot2,
@@ -26,12 +36,11 @@ pacman::p_load(
 
 # Plot tSNE for merged clusters for each cell type
 # B cell
-
-cluster_center <- synData.Bcell.downsample %>% group_by(markers) %>% summarise(
-  mean_SNE1 = mean(SNE1),
-  mean_SNE2 = mean(SNE2)
-) 
+cluster_center <- synData.Bcell.downsample %>%
+                  group_by(markers) %>%
+                  summarise_at(vars(SNE1, SNE2), funs(median(., na.rm=TRUE)))
 cluster_center <- as.data.frame(cluster_center)
+
 
 ggplot() +
   geom_point(
@@ -42,7 +51,7 @@ ggplot() +
   scale_fill_manual(values = meta_colors$cytof_cluster, name = "") +
   geom_label_repel(
     data = cluster_center,
-    aes(x = mean_SNE1, y = mean_SNE2, label = markers),
+    aes(x = SNE1, y = SNE2, label = markers),
     size = 5, color = "black",
     fontface = 'bold',
     box.padding = unit(0.5, "lines"),
@@ -358,3 +367,44 @@ ggplot() +
   ) 
 ggsave(file = paste("mono_cytof_tSNE_CCR2", ".png", sep = ""), width = 5, height = 5) # , useDingbats = FALSE
 dev.off()
+
+# ------
+# Plot disease status
+cells_type <- synData.Tcell.downsample
+
+inflam_label <- read.xls("../data/postQC_all_samples.xlsx")
+inflam_label$Mahalanobis_20 <- rep("OA", nrow(inflam_label))
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis > 20)] <- "Leukocyte-rich RA"
+inflam_label$Mahalanobis_20[which(inflam_label$Mahalanobis < 20 & inflam_label$Disease != "OA")] <- "Leukocyte-poor RA"
+inflam_label$Patient <- as.character(inflam_label$Patient)
+inter <- intersect(cells_type$sampleID, inflam_label$Patient)
+
+cells_type <- cells_type[which(cells_type$sampleID %in% inter), ]
+inflam_label <- inflam_label[which(inflam_label$Patient %in% inter), ]
+inflam_label <- inflam_label[, c("Patient", "Mahalanobis_20")]
+colnames(inflam_label)[1] <- "sampleID"
+cells_type <- merge(cells_type, inflam_label, by = "sampleID")
+
+ggplot() +
+  geom_point(
+    data = cells_type[sample(nrow(cells_type)),],
+    mapping = aes_string(x = "SNE1", y = "SNE2", fill = "Mahalanobis_20"),
+    size = 1.4, stroke = 0.0001, shape = 21
+  ) +
+  scale_fill_manual(values = meta_colors$Case.Control, name = "") +
+  labs(
+    x = NULL,
+    y = NULL
+  ) +
+  theme_bw(base_size = 22) +
+  theme(
+    legend.position = "none",
+    axis.text = element_blank(), 
+    axis.ticks = element_blank(), 
+    panel.grid = element_blank()
+  ) 
+ggsave(file = paste(gsub(".*[.]([^.]+)[.].*", "\\1", deparse(substitute(synData.Tcell.downsample))), 
+                    "_cytof_disease", ".png", sep = ""), width = 5, height = 5) 
+dev.off()
+
+

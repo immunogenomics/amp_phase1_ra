@@ -164,7 +164,7 @@ dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
 # ---
 # Plot sc cluster markers in bulk
-ggplot() +
+p <- ggplot() +
   geom_errorbar(data=dat_plot, 
                 mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
                 # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
@@ -185,20 +185,32 @@ ggplot() +
        y = NULL
        # y = "Fold change"
   ) +
-  theme_bw(base_size = 20) +
+  theme_bw(base_size = 22) +
   theme(    
     # axis.ticks = element_blank(), 
-    legend.position = "nonoe",
+    legend.position = "none",
     panel.grid = element_blank(),
-    axis.text = element_text(size = 20, color = "black"),
-    axis.text.y = element_text(hjust=1, size=20, face = "italic"),
-    # axis.text.x=element_text(angle=45, hjust=1, size = 25)
-    strip.background = element_rect(fill=meta_colors$fine_cluster)
+    axis.text = element_text(size = 21, color = "black"),
+    axis.text.y = element_text(hjust=1, size=21, face = "italic"),
+    panel.border = element_rect(fill = NA, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # panel.spacing = unit(0.3, "lines"),
+    strip.placement = "inside"
   )
-# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+
+g <- ggplot_gtable(ggplot_build(p))
+stripr <- which(grepl('strip-r', g$layout$name))
+fills <- meta_colors$fine_cluster[78:81]
+k <- 1
+for (i in stripr) {
+  j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+  g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+  k <- k+1
+}
+grid.draw(g)
 dev.print("fibro_sc_markers_in_bulk.pdf", width = 5, height = 6, dev = pdf)
 dev.off()
-
 
 
 # ------------------------------------------------------------
@@ -435,7 +447,7 @@ dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
 # Plot genes based on logFC
 # Plot sc cluster markers in bulk
-ggplot() +
+p <- ggplot() +
   geom_errorbar(data=dat_plot, 
                 mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
                 # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
@@ -454,24 +466,37 @@ ggplot() +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   coord_flip() +
   labs(x = NULL, 
-       y = NULL
+       y = "Fold change"
        # y = "Fold change"
   ) +
-  theme_bw(base_size = 21) +
+  theme_bw(base_size = 23) +
   theme(    
     # axis.ticks = element_blank(), 
-    legend.position = "nonoe",
+    legend.position = "none",
     panel.grid = element_blank(),
     axis.text = element_text(size = 21, color = "black"),
-    axis.text.y = element_text(hjust=1, size=21, face = "italic")
+    axis.text.y = element_text(hjust=1, size=21, face = "italic"),
+    panel.border = element_rect(fill = NA, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.spacing = unit(0.3, "lines"),
+    strip.placement = "inside"
     # axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
-# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
+
+g <- ggplot_gtable(ggplot_build(p))
+stripr <- which(grepl('strip-r', g$layout$name))
+fills <- meta_colors$fine_cluster[92:95]
+k <- 1
+for (i in stripr) {
+  j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+  g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+  k <- k+1
+}
+grid.draw(g)
 dev.print("mono_sc_markers_in_bulk.pdf", width = 5, height = 7.5, dev = pdf)
 dev.off()
-
-
 
 
 # Take the top markers for each single-cell cluster and summarize 
@@ -657,7 +682,7 @@ dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
 # Plot genes based on logFC
 # Plot sc cluster markers in bulk
-ggplot() +
+p <- ggplot() +
   geom_errorbar(data=dat_plot, 
                 mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
                 # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
@@ -679,21 +704,34 @@ ggplot() +
        y = NULL
        # y = "Fold change"
   ) +
-  theme_bw(base_size = 21) +
+  theme_bw(base_size = 23) +
   theme(    
     # axis.ticks = element_blank(), 
     legend.position = "nonoe",
     panel.grid = element_blank(),
     axis.text = element_text(size = 21, color = "black"),
-    axis.text.y = element_text(hjust=1, size=21, face = "italic")
+    axis.text.y = element_text(hjust=1, size=21, face = "italic"),
+    panel.border = element_rect(fill = NA, color = "black"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    # panel.spacing = unit(0.3, "lines"),
+    strip.placement = "inside"
     # axis.text.x=element_text(angle=45, hjust=1, size = 25)
     # strip.background = element_rect(fill=meta_colors$fine_cluster)
   )
-# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
-dev.print("bcell_sc_markers_in_bulk.pdf", width = 5, height = 9.2, dev = pdf)
+
+g <- ggplot_gtable(ggplot_build(p))
+stripr <- which(grepl('strip-r', g$layout$name))
+fills <- meta_colors$fine_cluster[88:91]
+k <- 1
+for (i in stripr) {
+  j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+  g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+  k <- k+1
+}
+grid.draw(g)
+dev.print("bcell_sc_markers_in_bulk.pdf", width = 5, height = 8.8, dev = pdf)
 dev.off()
-
-
 
 
 # Take the top markers for each single-cell cluster and summarize 
@@ -813,7 +851,7 @@ gene_order <- c("IL7R", "SELL", "CCR7", "NFKBIZ", "LEF1", # SC-T1
                 "CXCL13", "PDCD1", "CD200", # SC-T3
                 "GZMK", "CD8A", "NKG7", "GZMA", # SC-T4
                 "GNLY", "GZMB", "ZNF683", "PRF1", # SC-T5
-                "HLA.DRB1", "GZMB", "IFNG" # SC-T6
+                "HLA.DRB1", "HLA.DPA1", "IFNG" # SC-T6
 )
 dat_plot <- toptable_fdr[which(rownames(toptable_fdr) %in% gene_order),]
 
@@ -832,7 +870,7 @@ dat_plot$cluster <- c(rep("SC-T1", 5), rep("SC-T2", 4), rep("SC-T3", 3), rep("SC
 dat_plot[which(dat_plot$gene == "HLA.DRB5"),]$gene <- "HLA-DRB5"
 dat_plot[which(dat_plot$gene == "HLA.DQA2"),]$gene <- "HLA-DQA2"
 dat_plot[which(dat_plot$gene == "HLA.DRB1"),]$gene <- "HLA-DRB1"
-dat_plot[which(dat_plot$gene == "HLA.DQA1"),]$gene <- "HLA-DQA1"
+dat_plot[which(dat_plot$gene == "HLA.DPA1"),]$gene <- "HLA-DPA1"
 
 dat_plot$up_down <- dat_plot$logFC
 dat_plot$up_down[which(dat_plot$up_down > 0)] <- "up"
@@ -841,7 +879,7 @@ dat_plot$up_down[which(dat_plot$up_down < 0)] <- "down"
 
 # Plot genes based on logFC
 # Plot sc cluster markers in bulk
-ggplot() +
+p <- ggplot() +
   geom_errorbar(data=dat_plot, 
                 mapping=aes(x=reorder(gene, logFC), ymin=CI.L, ymax=CI.R), 
                 # mapping=aes(x=gene, ymin=CI.L, ymax=CI.R), 
@@ -854,29 +892,39 @@ ggplot() +
              size = 3
   ) +
   facet_grid(cluster ~ ., scales = "free", space = "free_x") +
-  scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
+  # scale_color_manual(values = c('#6A3D9A', '#FF7F00')) +
+  # scale_color_manual(values = meta_colors$fine_cluster, name = "") +
   geom_hline(yintercept = 0, size = 0.3) +
   scale_x_discrete(position = "bottom") +
   scale_y_continuous(labels = function(x) round(2^abs(x), 1)) +
   coord_flip() +
   labs(x = NULL, 
-       y = NULL
+       y = "Fold change"
        # y = "Fold change"
   ) +
   theme_bw(base_size = 21) +
   theme(    
     # axis.ticks = element_blank(), 
-    legend.position = "nonoe",
+    legend.position = "none",
     panel.grid = element_blank(),
     axis.text = element_text(size = 21, color = "black"),
     axis.text.y = element_text(hjust=1, size=21, face = "italic")
     # axis.text.x=element_text(angle=45, hjust=1, size = 25)
-    # strip.background = element_rect(fill=meta_colors$fine_cluster)
+    # strip.background = element_blank()
   )
-# dev.print("fibro_DE_genes_FC.pdf", width = 9.5, height = 5, dev = pdf)
-dev.print("Tcell_sc_markers_in_bulk.pdf", width = 5, height = 8.5, dev = pdf)
-dev.off()
 
+g <- ggplot_gtable(ggplot_build(p))
+stripr <- which(grepl('strip-r', g$layout$name))
+fills <- meta_colors$fine_cluster[82:87]
+k <- 1
+for (i in stripr) {
+  j <- which(grepl('rect', g$grobs[[i]]$grobs[[1]]$childrenOrder))
+  g$grobs[[i]]$grobs[[1]]$children[[j]]$gp$fill <- fills[k]
+  k <- k+1
+}
+grid.draw(g)
+dev.print("Tcell_sc_markers_in_bulk2.pdf", width = 5, height = 8.5, dev = pdf)
+dev.off()
 
 
 # Take the top markers for each single-cell cluster and summarize 
