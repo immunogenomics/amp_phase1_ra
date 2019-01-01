@@ -84,7 +84,7 @@ See this file for a detailed walk-through of the analysis:
     pure_functioins.R
     
 
-## Visualization of results for manuscript figures
+## Data visualization for manuscript figures:
 
 #### Single cells from RNA-seq in low dimensional space from CCA-based framework (CCA and tSNE):
 
