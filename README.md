@@ -24,13 +24,17 @@ Feel free to use our websites to view the immune and stroma cell populations, an
 2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus.
 3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus. 
 
+Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
+
+
 ## Data Availability
 
 The raw data of this study are available at:
 
 1. ImmPort (study accession code SDY998 and SDY999)
 2. dbGAP (study accession: phs001457.v1.p1). 
-3. Send me (fanzhang@broadinstitute.org) an email if you have any quesitons or requests for data download.
+
+Send us (fanzhang@broadinstitute.org or jmears@broadinstitute.org) an email if you have any quesitons or requests for data download.
 
 ## Getting Started
 
