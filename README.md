@@ -2,7 +2,7 @@
 
 The preprint version can be viewed and cited:
 
-> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130.
+> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130. Under review.
 
 ## Overview
 
@@ -20,9 +20,9 @@ This repo has the code used to analyze data and make figures in the published ma
 
 Feel free to use our websites to view the immune and stroma cell populations, and search your favorite genes:
  
-1. [Shiny app](https://immunogenomics.io/ampra/)
-2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/)
-3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1)	
+1. [Shiny app](https://immunogenomics.io/ampra/): view single-cell RNA-seq, bulk RNA-seq, and mass cytometry data for rheumatoid arthritis
+2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus.
+3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus. 
 
 ## Data Availability
 
@@ -47,32 +47,33 @@ rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
 
 ## Multiple high-dimensional datasets analysis
 
-#### CCA analysis of bulk and single-cell RNA-seq
+#### Optimize leukocyte threshold to classify tissue samples based on leukocyte infiltration by flow cytometry
 
-We use canonical correlation analysis (CCA) to integrate bulk RNA-seq with
-single-cell RNA-seq. See this file for a detailed walk-through of the analysis:
+    optimal_lymphocyte_threshold.R
+    inflamed.html
+    
+#### CCA analysis of 
 
-    R/scRNAseq_bulkRNAseq_integrative_pipeline.R
+    1. bulk and single-cell RNA-seq
 
-#### CCA analysis of bulk and single-cell RNA-seq
+We use canonical correlation analysis (CCA) to integrate bulk RNA-seq with single-cell RNA-seq. See this file for a detailed walk-through of the analysis:
+
+     R/scRNAseq_bulkRNAseq_integrative_pipeline.R
+
+    2. single-cell RNA-seq and mass cytometry
 
 We use the regularized CCA to integrate bulk RNA-seq with mass cytometry. 
 See this file for a detailed walk-through of the analysis:
 
     cytof_bulkRNAseq_integrative_pipeline.R
     
-#### Identification of single-cell RNA-seq marker genes based on the cluster labels     
+#### Identification of single-cell RNA-seq cluster marker genes    
     
     cluster_marker_table.R
     
 #### Differential analysis for bulk RNA-seq data
 
     limma_differential_bulk.R
-
-#### Optimize leukocyte threshold to classify tissue samples based on leukocyte infiltration by flow cytometry
-
-    optimal_lymphocyte_threshold.R
-    inflamed.html
     
 #### Statistical analysis functions for PCA, densitiy analysis, etc
 
