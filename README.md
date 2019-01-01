@@ -107,5 +107,5 @@ See this file for a detailed walk-through of the analysis:
     plot_genes_detected_mitoch.R
     
 
-
+Send me (fanzhang@broadinstitute.org) an email if you have any quesitons for the analysis.
 
