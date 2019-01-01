@@ -54,18 +54,18 @@ rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
     
 #### CCA analysis of 
 
-    1. bulk and single-cell RNA-seq
+1. bulk and single-cell RNA-seq
 
-We use canonical correlation analysis (CCA) to integrate bulk RNA-seq with single-cell RNA-seq. See this file for a detailed walk-through of the analysis:
+        We use canonical correlation analysis (CCA) to integrate bulk RNA-seq with single-cell RNA-seq. See this file for a detailed walk-through of the analysis:
 
-     R/scRNAseq_bulkRNAseq_integrative_pipeline.R
+        `R/scRNAseq_bulkRNAseq_integrative_pipeline.R`
 
-    2. single-cell RNA-seq and mass cytometry
+2. single-cell RNA-seq and mass cytometry
 
-We use the regularized CCA to integrate bulk RNA-seq with mass cytometry. 
+        We use the regularized CCA to integrate bulk RNA-seq with mass cytometry. 
 See this file for a detailed walk-through of the analysis:
 
-    cytof_bulkRNAseq_integrative_pipeline.R
+        `cytof_bulkRNAseq_integrative_pipeline.R`
     
 #### Identification of single-cell RNA-seq cluster marker genes    
     
