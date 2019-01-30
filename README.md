@@ -1,8 +1,8 @@
-# Accelerating Medicines Partnership Phase 1 Rheumatoid Arthritis (RA)
+# Accelerating Medicines Partnership (AMP) Phase 1 Rheumatoid Arthritis (RA)
 
 The preprint version can be viewed and cited:
 
-> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130. Under review.
+> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130. In press.
 
 ## Overview
 
@@ -18,11 +18,11 @@ This repo has the code used to analyze data and make figures in the published ma
 
 ## Website 
 
-Feel free to use our websites to view the immune and stroma cell populations, and search your favorite genes:
+Feel free to check out the  websites and search your favorite genes:
  
-1. [Shiny app](https://immunogenomics.io/ampra/): view single-cell RNA-seq, bulk RNA-seq, and mass cytometry data for rheumatoid arthritis
-2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus.
-3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets for rheumatoid arthritis and lupus. 
+1. [Shiny app](https://immunogenomics.io/ampra/): view single-cell RNA-seq, bulk RNA-seq, and mass cytometry data for rheumatoid arthritis data.
+2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets: 1 rheumatoid arthritis dataset and 2 lupus datasets.
+3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets: 1 rheumatoid arthritis datset and 2 lupus datasets. 
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
 
@@ -50,6 +50,8 @@ rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
 ```
 
 ## Multiple high-dimensional datasets integration:
+
+Send us (fanzhang@broadinstitute.org) an email if you have any quesitons for the analysis.
 
 #### Optimize leukocyte threshold to classify tissue samples based on leukocyte infiltration by flow cytometry:
 
@@ -106,6 +108,3 @@ See this file for a detailed walk-through of the analysis:
     
     plot_genes_detected_mitoch.R
     
-
-Send me (fanzhang@broadinstitute.org) an email if you have any quesitons for the analysis.
-
