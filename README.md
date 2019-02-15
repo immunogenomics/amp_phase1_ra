@@ -68,9 +68,9 @@ Feel free to check out the  websites and search your favorite genes:
 2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets: 1 rheumatoid arthritis dataset and 2 lupus datasets.
 3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets: 1 rheumatoid arthritis datset and 2 lupus datasets. 
 
-For example, get everyting in one page:
+For example, get everyting in one page using [Shiny app](https://immunogenomics.io/ampra/):
 
-![Shiny app](website_screenshot.png)
+![Shiny app](website_screenshot.png = 20x40)
 
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
