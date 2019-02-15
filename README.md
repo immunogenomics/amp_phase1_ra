@@ -1,4 +1,6 @@
-# Accelerating Medicines Partnership (AMP) Phase 1 Rheumatoid Arthritis (RA)
+# Use single-cell transcriptomics and proteomics to study Rheumatoid Arthritis (RA)
+
+*Accelerating Medicines Partnership (AMP) Phase 1*
 
 ## Overview
 This repo provides the **Data availability**, **Source code**, **Website** for our work on using single-cell transcriptomics and proteomics data to define inflammatory cell states in autoimmune disease - rheumatoid arthritis.
