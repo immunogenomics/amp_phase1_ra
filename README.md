@@ -1,5 +1,5 @@
-# Use single-cell transcriptomics and proteomics to study Rheumatoid Arthritis (RA) *Accelerating Medicines Partnership (AMP) Phase 1*
-
+# Use single-cell transcriptomics and proteomics to study Rheumatoid Arthritis (RA) 
+*Accelerating Medicines Partnership (AMP) Phase 1*
 
 
 ## Overview
