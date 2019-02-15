@@ -12,9 +12,9 @@ The preprint version can be viewed and cited:
 
 The raw data of this study are available at:
 
-| Database        | Study accession code     | Data type  |
+| Database        | Link with accession code     | Data type  |
 | ------------- | ------------- | ----- |
-| ImmPort      | [SDY998](https://www.immport.org/shared/study/SDY998) and SDY999](https://www.immport.org/shared/study/SDY999)| single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
+| ImmPort      | [SDY998](https://www.immport.org/shared/study/SDY998) and [SDY999](https://www.immport.org/shared/study/SDY999)| single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
 | dbGAP      | [phs001457.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001457.v1.p1)   |  single-cell RNA-seq and mass cytometry |
 
 
@@ -30,13 +30,14 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-### Download the data from Partners
+### Download the data from Partners:
 `rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
 
 
 ### Structure
 
 The files in the repo are organized as follows:
+
     .
     ├── R
     |── data
@@ -66,5 +67,10 @@ Feel free to check out the  websites and search your favorite genes:
 1. [Shiny app](https://immunogenomics.io/ampra/): view single-cell RNA-seq, bulk RNA-seq, and mass cytometry data for rheumatoid arthritis data.
 2. [UCSC Cell Browser](https://immunogenomics.io/cellbrowser/): view single-cell RNA-seq datasets: 1 rheumatoid arthritis dataset and 2 lupus datasets.
 3. [Broad Institue Single Cell Portal](https://portals.broadinstitute.org/single_cell/study/amp-phase-1): view single-cell RNA-seq datasets: 1 rheumatoid arthritis datset and 2 lupus datasets. 
+
+For example, get everyting in one page:
+
+![Shiny app](website_screenshot.png)
+
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
