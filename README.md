@@ -12,15 +12,11 @@ The preprint version can be viewed and cited:
 
 The raw data of this study are available at:
 
-1. ImmPort (study accession code SDY998 and SDY999): data for single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology
-
 | Database        | Study accession code     | Data type  |
-| ------------- |:-------------:| -----:|
-| ImmPort      | SDY998 and SDY999 | single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
-| dbGAP      | phs001457.v1.p1     |  single-cell RNA-seq and mass cytometry |
+| ------------- | ------------- | ----- |
+| ImmPort      | [SDY998](https://www.immport.org/shared/study/SDY998) and SDY999](https://www.immport.org/shared/study/SDY999)| single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
+| dbGAP      | [phs001457.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001457.v1.p1)   |  single-cell RNA-seq and mass cytometry |
 
-
-2. dbGAP (study accession: phs001457.v1.p1): single-cell RNA-seq and mass cytometry data 
 
 Send us (fanzhang@broadinstitute.org or jmears@broadinstitute.org) an email if you have any quesitons or requests for data download.
 
@@ -34,8 +30,8 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-# Download the data from Partners
-rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
+### Download the data from Partners
+`rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
 
 
 ### Structure
@@ -47,7 +43,7 @@ The files in the repo are organized as follows:
 
 `data/` has Excel sheets with sample metadata and RData files with processed data ready for analysis.
 
-`R/` has code for analysis and creating figures.
+`R/` has code for analysis and creating figures:
 
 + Classify tissue samples using Mahalanobis distance: `R/optimal_lymphocyte_threshold.R`
 
