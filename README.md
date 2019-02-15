@@ -22,7 +22,7 @@ Send us (fanzhang@broadinstitute.org or jmears@broadinstitute.org) an email if y
 
 ## Source code 
 
-### Clone this repo:
+#### Clone this repo:
 
 ```bash
 cd ~/work/
@@ -30,11 +30,11 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-### Download the data:
+#### Download the data:
 `rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
 
 
-### Structure
+#### Structure
 
 The files in the repo are organized as follows:
 
@@ -56,6 +56,7 @@ The files in the repo are organized as follows:
 
 + Visualize results: `R/cytof_results_plot.R`, `plot_cluster_markers.R`, etc
  
++ More
 
 Send us (fanzhang@broadinstitute.org) an email if you have any quesitons for the analysis.
 
