@@ -70,8 +70,6 @@ Feel free to check out the  websites and search your favorite genes:
 
 For example, get everyting in one page using [Shiny app](https://immunogenomics.io/ampra/):
 
-![Shiny app](website_screenshot.png = 20x40)
-
-<img src="website_screenshot.png" alt="drawing" width="20"/>
+<img src="website_screenshot.png" alt="drawing" width="100"/>
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
