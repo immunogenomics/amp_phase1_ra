@@ -1,7 +1,7 @@
 # Accelerating Medicines Partnership (AMP) Phase 1 Rheumatoid Arthritis (RA)
 
 ## Overview
-This repo provides the *data availability*, *code*, *website* for our work on analyzing and integrating single-cell transcriptomics and mass cytometry data to define inflammatory cell states in rheumatoid arthritis joint synovial tissue.
+This repo provides the **Data availability**, **Source code**, **Website** for our work on using single-cell transcriptomics and proteomics data to define inflammatory cell states in autoimmune disease - rheumatoid arthritis.
 
 The preprint version can be viewed and cited:
 
@@ -13,11 +13,18 @@ The preprint version can be viewed and cited:
 The raw data of this study are available at:
 
 1. ImmPort (study accession code SDY998 and SDY999): data for single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology
+
+| Database        | Study accession code     | Data type  |
+| ------------- |:-------------:| -----:|
+| ImmPort      | SDY998 and SDY999 | single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
+| dbGAP      | phs001457.v1.p1     |  single-cell RNA-seq and mass cytometry |
+
+
 2. dbGAP (study accession: phs001457.v1.p1): single-cell RNA-seq and mass cytometry data 
 
 Send us (fanzhang@broadinstitute.org or jmears@broadinstitute.org) an email if you have any quesitons or requests for data download.
 
-## Code 
+## Source code 
 
 ### Clone this repo:
 
@@ -25,6 +32,7 @@ Send us (fanzhang@broadinstitute.org or jmears@broadinstitute.org) an email if y
 cd ~/work/
 git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
+```
 
 # Download the data from Partners
 rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
@@ -50,18 +58,7 @@ The files in the repo are organized as follows:
 + Functions for PCA, densisty analysis, etc: `R/pure_functioins.R`
 
 + Visualize results: `R/cytof_results_plot.R`, `plot_cluster_markers.R`, etc
-
-
-### Clone this repo:
-
-```bash
-cd ~/work/
-git clone git@github.com:immunogenomics/amp_phase1_ra.git
-cd amp_phase1_ra
-
-# Download the data from Partners
-rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data .
-``` 
+ 
 
 Send us (fanzhang@broadinstitute.org) an email if you have any quesitons for the analysis.
 
