@@ -12,6 +12,7 @@ library(ggrepel)
 library(gdata) 
 library(limma)
 library(ggbeeswarm)
+library(grid)
 
 source("pure_functions.R")
 source("meta_colors.R")
@@ -215,7 +216,8 @@ dev.off()
 
 # ------------------------------------------------------------
 # Only plot one gene
-bulk_m$gene <- as.numeric(bulk_samples[which(rownames(bulk_samples) == "HLA.DRA"),])
+gene_name <- "c3"
+bulk_m$gene <- as.numeric(bulk_samples[which(rownames(bulk_samples) == gene_name),])
 dat_median <- bulk_m %>% group_by(Mahalanobis_20) %>% summarise(median = median(gene))
 bulk_m$Mahalanobis_20 <- as.character(bulk_m$Mahalanobis_20)
 bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "inflamed RA")] <- "leukocyte-rich RA"
@@ -223,7 +225,6 @@ bulk_m$Mahalanobis_20[which(bulk_m$Mahalanobis_20 == "non-inflamed RA")] <- "leu
 bulk_m$Mahalanobis_20 <- factor(bulk_m$Mahalanobis_20,
                                 levels = c('OA','leukocyte-poor RA', "leukocyte-rich RA"),ordered = TRUE)
 
-bulk_m <- bulk_m[-which(bulk_m$gene > 10 & bulk_m$Mahalanobis_20 == "leukocyte-poor RA"),]
 
 ggplot(data=bulk_m, 
        mapping = aes(x=Mahalanobis_20, y=gene, fill=Mahalanobis_20)
@@ -239,7 +240,7 @@ ggplot(data=bulk_m,
   scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
   xlab('')+ylab('Gene expression')+
   theme_bw(base_size = 25) +
-  labs(title = "HLA-DRA") +
+  labs(title = gene_name) +
   theme(
     legend.position = "none",
     axis.ticks = element_blank(), 
@@ -248,10 +249,10 @@ ggplot(data=bulk_m,
     axis.text.x = element_text(angle=35, hjust=1, size=25),
     axis.text.y = element_text(size = 22),
     plot.title = element_text(color="black", size=25)) +
-  theme(legend.text=element_text(size=25)) +
-  coord_cartesian(ylim = c(2.2, 12))
-  ggsave(
-  file = "bulk_HLA-DRA_fibro_3disease.pdf",
+  theme(legend.text=element_text(size=25)) 
+  # coord_cartesian(ylim = c(2.2, 12))
+ggsave(
+  file = paste0("bulk_", gene_name, "_", cell_type, "_samples", ".pdf", sep=""),
   width = 4.5, height = 7
 )
 
@@ -259,13 +260,54 @@ t.test(bulk_m$gene[which(bulk_m$Mahalanobis_20 == "leukocyte-rich RA")],
        bulk_m$gene[which(bulk_m$Mahalanobis_20 == "leukocyte-poor RA")],
        alternative ="greater")
 
+
+# A function to do this
+
+plot_bulk_samples <- function(dat, marker = "", cell_type) {
+  dat_median <- dat %>% group_by(Mahalanobis_20) %>% summarise(median = median(gene))
+  ggplot(data=bulk_m, 
+         mapping = aes(x=Mahalanobis_20, y=gene, fill=Mahalanobis_20)
+    ) +
+    geom_quasirandom(
+      shape = 21, size = 4.5, stroke = 0.35
+    ) +
+    stat_summary(
+      fun.y = median, fun.ymin = median, fun.ymax = median,
+      geom = "crossbar", width = 0.8
+    ) +
+    scale_fill_manual(values = meta_colors$Case.Control) +
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 3)) + 
+    xlab('')+ylab('Gene expression')+
+    theme_bw(base_size = 25) +
+    labs(title = gene_name) +
+    theme(
+      legend.position = "none",
+      axis.ticks = element_blank(), 
+      panel.grid = element_blank(),
+      axis.text = element_text(size = 25, color = "black"),
+      axis.text.x = element_text(angle=35, hjust=1, size=25),
+      axis.text.y = element_text(size = 22),
+      plot.title = element_text(color="black", size=25)) +
+    theme(legend.text=element_text(size=25)) 
+  ggsave(
+    file = paste0("bulk_", marker, "_", cell_type, "_samples", ".pdf", sep=""),
+    width = 4.5, height = 7
+  )
+  dev.off()
+}
+
+gene_name <- "CADM1"
+bulk_m$gene <- as.numeric(bulk_samples[which(rownames(bulk_samples) == gene_name),])
+plot_bulk_samples(bulk_m, gene_name, cell_type)
+
+
+
+
+
+
+
+
 # ---
-
-
-
-
-
-
 
 # Take the top markers for each single-cell cluster and summarize 
 dat_table <- readRDS("../data/cluster_marker_table.rds")
@@ -654,7 +696,7 @@ dim(toptable_fdr[which(toptable_fdr$logFC < -1 & toptable_fdr$adj.P.Val < 1e-1),
 # write.table(toptable_fdr,outFile,row.names=T,col.names=T,quote=F, sep = "\t")
 
 # Show CCA genes (also the single-cell RNA-seq cluster markers)
-gene_order <- c("CD83", "CD38", "IL6", "IGHD", "IGHM", "BACH2", # SC-B1
+gene_order <- c("CD83", "CXCR4", "IL6", "IGHD", "IGHM", "BACH2", # SC-B1
                 "HLA.DPB1", "HLA.DRA", "MS4A1", # SC-B2
                 "ITGAX", "TBX21", "ZEB2", "ACTB", "AICDA", "IFI44L", "GBP1", "ISG15", # SC-B3
                 "XBP1", "MZB1", "CD27", "SSR4", "DERL3" # SC-B4

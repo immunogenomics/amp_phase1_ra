@@ -23,15 +23,6 @@ dat <- read.xls("data/postQC_all_samples.xlsx")
 dim(dat)
 table(dat$Mahalanobis_20)
 
-# # Load flow cytometry data that collected by Kevin
-# flow <- read.xls("data/171215_FACS_data_for_figure.xlsx")
-# flow_qc <- flow[which(flow$Sample.ID %in% dat$Patient),]
-# dim(flow_qc)
-# colnames(flow_qc)[2] <- "Patient"
-# 
-# dat_all <- merge(dat, flow_qc, by = "Patient")
-# dim(dat_all)
-# table(dat_all$Case.Control)
 
 dat_all <- dat
 dat_all$Mahalanobis_20 <- as.character(dat_all$Mahalanobis_20)
@@ -104,7 +95,7 @@ ggplot(data=dat_all,
     shape = 21, size = 4.5, stroke = 0.35
   ) +
   stat_summary(
-    fun.y = median, fun.ymin = median, fun.ymax = median,
+    fun.y = mean, fun.ymin = mean, fun.ymax = mena,
     geom = "crossbar", width = 0.8
   ) +
   scale_fill_manual(values = meta_colors$Case.Control) +
@@ -439,7 +430,7 @@ ggplot(
   ) +
   scale_fill_manual(values = meta_colors$Case.Control) +
   geom_text(x = Inf, y = -Inf, hjust = 1, vjust = 0,
-            label=lm_eqn(fit), 
+            label=lm_eqn(fit),
             color='black', fontface="plain", size=7, parse=T) +
   xlab('Krenn inflammatory score')+ylab('Lymphocytes abundance\n(% of synovial cells)')+
   scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
@@ -462,26 +453,28 @@ dev.off()
 
 # Have to remove 300-0512 since we don't have flow of fibroblast and endothelial cells
 dat_all <- dat_all[-which(dat_all$Patient == "300-0512"),]
-dat_all$Endothelial <- as.numeric(as.character(dat_all$Endothelial))
-dat_all$Fibroblasts <- as.numeric(as.character(dat_all$Fibroblasts))
-dat_all$Other <- as.numeric(as.character(dat_all$Other))
+# dat_all$Endothelial <- as.numeric(as.character(dat_all$Endothelial))
+# dat_all$Fibroblasts <- as.numeric(as.character(dat_all$Fibroblasts))
+# dat_all$Other <- as.numeric(as.character(dat_all$Other))
 
-bcell_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells.y))
-cd4_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD4.T.cells.y))
-cd8_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD8.T.cells.))
-endo_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Endothelial))
-fibro_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Fibroblasts))
-mono_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Monocytes.y))
-other_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Other))
+bcell_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(B.cells))
+cd4_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD4.T.cells))
+cd8_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(CD8.T.cells))
+endo_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Endothelial.cells))
+fibro_lin_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Lining.fibroblasts))
+fibro_sublin_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Sublining.fibroblasts))
+mono_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Monocytes))
+# other_median <- dat_all %>% group_by(Mahalanobis_20) %>% summarise(median = median(Other))
 
 dat_median = data.frame(
   bcell = bcell_median$median,
   cd4 = cd4_median$median ,
   cd8 = cd8_median$median,
   endo = endo_median$median,
-  fibro = fibro_median$median,
-  mono = mono_median$median,
-  other = other_median$median
+  fibro_lin = fibro_lin_median$median,
+  fibro_sublin = fibro_sublin_median$median,
+  mono = mono_median$median
+  # other = other_median$median
 )
 dat_median <- t(dat_median)
 
@@ -518,4 +511,57 @@ ggplot(
     )
 ggsave(file = paste("barplot_flow_gates_inflamed_noninflamed", ".pdf", sep = ""), width = 5.5, height = 5, dpi = 300)
 dev.off()
+
+
+
+# ---
+# Plot flow per patient
+# # Load flow cytometry data that collected by Kevin
+flow <- read.xls("data/170829 AMP cell count.xlsx")
+flow <- flow[, -which(colnames(flow) %in% c("All.viable.cells", "Other.cells"))]
+flow_qc <- flow[which(flow$Sample %in% dat$Patient),]
+dim(flow_qc)
+
+flow_qc <- flow_qc[order(match(flow_qc$Sample, dat$Patient)), ] 
+all(flow_qc$Sample == as.character(dat$Patient))
+
+flow_qc$Mahalanobis_20 <- as.character(dat$Mahalanobis_20)
+flow_qc$Mahalanobis_20[which(flow_qc$Mahalanobis_20 == "non-inflamed RA")] <- "leukocyte-poor RA"
+flow_qc$Mahalanobis_20[which(flow_qc$Mahalanobis_20 == "inflamed RA")] <- "leukocyte-rich RA"
+
+plot_bar <- melt(flow_qc, id.vars = c("Sample", "Mahalanobis_20"))
+plot_bar$Mahalanobis_20 <- factor(plot_bar$Mahalanobis_20,
+                                 levels = c('OA','leukocyte-poor RA', "leukocyte-rich RA"),ordered = TRUE)
+
+
+ggplot(
+  data=plot_bar,
+  aes(x=Sample, y= value, fill = variable)
+  ) +
+  geom_bar(stat="identity",
+           position = "fill",
+           # position = "stack",
+           width = 0.85
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  facet_grid(. ~ Mahalanobis_20, scales = "free", space = "free_x") +
+  scale_fill_manual("", values = meta_colors$flow) +
+  labs(
+    x = "Donors",
+    y = "Abundance of flow/live"
+    # y = "Number of cells"
+  ) +
+  theme_bw(base_size = 40) +
+  theme(    
+    # legend.position="none",
+    # axis.ticks = element_blank(), 
+    panel.grid = element_blank(),
+    axis.text = element_text(size = 40),
+    axis.text.x=element_text(angle= 40, hjust=1),
+    axis.text.y = element_text(size = 40))
+ggsave(file = paste("barplot_flow_celltype_patient", ".pdf", sep = ""),
+       width = 25, height = 10, dpi = 300)
+dev.off()
+
+
 
