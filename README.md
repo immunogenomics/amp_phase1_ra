@@ -77,4 +77,4 @@ For example, get everyting in one page using [Shiny app](https://immunogenomics.
 
 <img src="website_screenshot.png" alt="drawing" width="400"/>
 
-Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
+Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, or fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
