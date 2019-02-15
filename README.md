@@ -30,7 +30,7 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-### Download the data from Partners:
+### Download the data:
 `rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
 
 
@@ -70,6 +70,6 @@ Feel free to check out the  websites and search your favorite genes:
 
 For example, get everyting in one page using [Shiny app](https://immunogenomics.io/ampra/):
 
-<img src="website_screenshot.png" alt="drawing" width="100"/>
+<img src="website_screenshot.png" alt="drawing" width="400"/>
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
