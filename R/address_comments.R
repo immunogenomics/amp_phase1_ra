@@ -18,6 +18,12 @@ library(RColorBrewer)
 library(ggrepel)
 library(cetcolor)
 library(gridExtra)
+require(viridis)
+require(ggbeeswarm)
+require(scales)
+require(reshape2)
+require(ggrepel)
+
 source("../amp_phase1_ra_viewer/R/install-packages.R")
 source("R/meta_colors.R")
 
@@ -1902,10 +1908,25 @@ ggsave(file = paste("silhouette_width_eucliDist_allClusters", ".pdf", sep = ""),
 dev.off()
 
 
+# ---
+# Update Figure 2 cytof panel
+
+synData.3ksample <- readRDS("R/synData.3ksample.postQC.SNE.rds")
+pal <- inferno(40)[c(11, seq(12, 40, 2))]
+
+mat <- synData.3ksample[sample(nrow(synData.3ksample)),]
+mat <- mat[, which(colnames(mat) %in% c("SNE1", "SNE2", "group"))]
+
+p <- ggplot(mat, aes(x = SNE1, y = SNE2))
+p <- p + geom_point(color = "grey40", size = 0.0002)
+p <- p + stat_density2d(geom = "polygon", aes(fill = ..level.., alpha = ..level..), n = 30)
+p <- p + coord_fixed(xlim = c(-35, 35), ylim = c(-35, 35))  
+p <- p + scale_fill_gradientn(colors = pal)
+p <- p + scale_alpha_continuous(range = c(0.0, 0.75), guide = F)
+p <- p + facet_grid(. ~ group)
+p
+
+ggsave(p, filename = "Figure2.png", width = 10, height = 8, dpi = 400)
 
 
-
-
-
-  
 
