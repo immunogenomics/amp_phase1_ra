@@ -72,5 +72,6 @@ For example, get everyting in one page using [Shiny app](https://immunogenomics.
 
 ![Shiny app](website_screenshot.png = 20x40)
 
+<img src="website_screenshot.png" alt="drawing" width="20"/>
 
 Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, and fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
