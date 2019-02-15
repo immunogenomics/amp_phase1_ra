@@ -52,6 +52,8 @@ The files in the repo are organized as follows:
 
 + Integrate bulk with single-cell RNA-seq: `R/scRNAseq_bulkRNAseq_integrative_pipeline.R`
 
++ Cluster and disease association using mass cytometry: `R/Tcell.SNE.densVM.server.R`, `R/Tcell.MASC.R`
+
 + Identify cluster marker genes: `R/cluster_marker_table.R`, `R/limma_differential_bulk.R`
 
 + Functions for PCA, densisty analysis, etc: `R/pure_functioins.R`
