@@ -1928,5 +1928,59 @@ p
 
 ggsave(p, filename = "Figure2.png", width = 10, height = 8, dpi = 400)
 
+# ---
+# Update Figure 3 tSNE plots
 
+dat <- readRDS("Documents/GitHub/amp_phase1_ra/data/celseq_synovium_log2_5265cells_paper.rds")
+meta <- readRDS("Documents/GitHub/amp_phase1_ra/data/celseq_synovium_meta_5265cells_paper.rds")
+all(colnames(dat) == meta$cell_name)
+
+type <- "Fibroblast"
+marker <- c("THY1", "HLA-DRA", "IL6", "CD34", "CD55", "DKK3")
+# marker <- c("CD14", "IL1B", "NUPR1", "SPP1", "IFI6")
+# marker <- c("CD4", "CD8A", "HLA-DRB1", "CCR7", "FOXP3", "CXCL13",
+#             "GZMB", "GNLY", "GZMK")
+# marker <- c("HLA-DRA", "XBP1", "IGHD", "IGHG3", "CD27", "ITGAX")
+
+myplots <- list()
+for (i in 1:length(marker)) {
+  gene <- marker[i]
+  type_meta <- meta[which(meta$cell_type == type), ]
+  type_meta$gene <- as.numeric(dat[which(rownames(dat) == gene), which(meta$cell_type == type)])
+  ind <- paste("p", i, sep = "")
+  ind <- ggplot() +
+    geom_point(
+      data = type_meta,
+      # data = type_meta[order(type_meta$gene),],
+      mapping = aes_string(x = "T1", y = "T2", fill = "gene"),
+      size = 1.4, stroke = 0.05, shape = 21
+    ) +
+    scale_fill_gradientn(
+      colours = colorRampPalette(RColorBrewer::brewer.pal(8, "Greens"))(8),
+      name = bquote("Log"[2]~"(CPM+1)")
+    ) +
+    guides(
+      # fill = guide_colorbar(barwidth = 1, barheight = 10),
+      fill = FALSE,
+      alpha = "none"
+    ) +
+    labs(
+      x = NULL,
+      y = NULL,
+      title = gene
+    ) +
+    theme_bw(base_size = 2) +
+    theme(
+      plot.title = element_text(color="black", size=25, face = "italic"), # face="bold.italic"
+      axis.text = element_blank(), 
+      axis.ticks = element_blank(), 
+      panel.grid = element_blank()
+    ) 
+  # print(ind)
+  myplots[[i]] <- ind
+}
+
+all <- do.call("grid.arrange", c(myplots, ncol = 2, nrow = 3))
+ggsave(file = paste("tsne_markers_", type, ".png", sep = ""), all, width = 4, height = 6.5, dpi = 400)
+dev.off()
 
