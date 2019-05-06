@@ -7,7 +7,7 @@ This repo provides the **Data availability**, **Source code**, **Website** for o
 
 The preprint version can be viewed and cited:
 
-> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. bioRxiv, p.351130. In press.
+> Zhang, F., Wei, K., Slowikowski, K., Fonseka, C.Y., Rao, D.A., et al, 2018. Defining Inflammatory Cell States in Rheumatoid Arthritis Joint Synovial Tissues by Integrating Single-cell Transcriptomics and Mass Cytometry. [Nature Immunology](https://www.nature.com/articles/s41590-019-0378-1), 2019.
 
 
 ## Data availibility
@@ -16,7 +16,7 @@ The raw data of this study are available at:
 
 | Database        | Link with accession code     | Data type  |
 | ------------- | ------------- | ----- |
-| ImmPort      | [SDY998](https://www.immport.org/shared/study/SDY998) and [SDY999](https://www.immport.org/shared/study/SDY999)| single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
+| ImmPort      | [SDY998](https://www.immport.org/shared/study/SDY998) | single-cell RNA-seq, mass cytometry, bulk RNA-seq, flow cytometry, clinical and histology |
 | dbGAP      | [phs001457.v1.p1](https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs001457.v1.p1)   |  single-cell RNA-seq and mass cytometry |
 
 
