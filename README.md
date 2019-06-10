@@ -32,7 +32,7 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-#### Download the data:
+#### Download the data from internal server:
 `rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
 
 
