@@ -32,9 +32,6 @@ git clone git@github.com:immunogenomics/amp_phase1_ra.git
 cd amp_phase1_ra
 ```
 
-#### Download the data from internal server:
-`rsync -avh rgs04:/data/srlab/public/srcollab/AMP/amp_phase1_ra/data`
-
 
 #### Structure
 
@@ -77,4 +74,4 @@ For example, get everyting in one page using [Shiny app](https://immunogenomics.
 
 <img src="website_screenshot.png" alt="drawing" width="400"/>
 
-Send us (kslowikowski@gmail.com, jmears@broadinstitute.org, or fanzhang@broadinstitute.org) an email if you have any quesitons for the websites. 
+Send us (fanzhang@broadinstitute.org, kslowikowski@gmail.com, or jmears@broadinstitute.org) an email if you have any quesitons.
