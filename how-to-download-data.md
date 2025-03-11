@@ -30,6 +30,8 @@ https://www.immport.org/shared/study/SDY998
 
 In order to download files from Immport, you must first register a new account:
 
+<img src="https://github.com/user-attachments/assets/e4869eb4-6539-4380-a2b0-20210f59d1fe" width="50%"></img>
+
 <img src="https://github.com/user-attachments/assets/08821c2d-7f9e-4a67-982e-5048404f1872" width="50%"></img>
 
 ## 3. Login to Immport
